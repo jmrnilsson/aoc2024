@@ -1,0 +1,8 @@
+.venv
+.vscode
+venv
+//.opendb
+.idea
+node_modules
+__pycache__
+.pytest_cache
