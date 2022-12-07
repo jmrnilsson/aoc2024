@@ -1,4 +1,4 @@
-# 🎄 Advent of Code 🎄 2022 🎄
+# 🎄 Advent of Code 2022 🎄
 
 Install: `requirements install -r requirements.txt`
   
