@@ -123,20 +123,11 @@ def solve_2(input_=None):
     test=58
     expect=1598415
     """
-    is_test = 1 if "test" in input_ else 0
-
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
 
     root, all_ = traverse(lines)
-
-    root_sum = root.size
-    all_sums = {n.get_path(): n.size for n in all_}
-    if is_test:
-        assert all_sums == {".": 48381165, "./d": 24933642, "./a/e": 584, "./a": 94853}
-    required = root_sum - 70000000 + 30000000
-    allowed = [m for m in all_sums.values() if m >= required]
-    return min(allowed)
+    return min(m for m in [n.size for n in all_] if m >= root.size - 70000000 + 30000000)
 
 
 if __name__ == "__main__":
@@ -148,12 +139,4 @@ if __name__ == "__main__":
     watch -n 3 python3 -m aoc.year_2021.day_03.day -p
     """
     poll_printer = PollPrinter(solve_1, solve_2, challenge_solve_1, challenge_solve_2, test_input, puzzle_input)
-    args = sys.argv[1:]
-    if not args:
-        poll_printer.print_timed()
-    elif re.match("^-poll$|^-p$", args[0]):
-        poll_printer.poll_print()
-    elif re.match("^-json1$|^-j1$", args[0]):
-        poll_printer.poll_json_1()
-    elif re.match("^-json2$|^-j2$", args[0]):
-        poll_printer.poll_json_2()
+    poll_printer.run(sys.argv)

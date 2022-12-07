@@ -27,7 +27,7 @@ def solve_1(input_=None):
     test=58
     expect=1598415
     """
-    start = 1 if "test" in input_ else 0
+    is_test = 1 if "test" in input_ else 0
 
     seed = []
     seed_set = set()
@@ -41,13 +41,17 @@ def solve_1(input_=None):
     area = 0
 
     with open(locate(input_), "r") as fp:
-        # lines = [li.strip() for li in fp.readlines()]
-        for line in fp.readlines():
-            if line == "\n":
-                continue
-            l, w, h = [int(i) for i in re.findall(r"\d+", line)]
-            area += 2*l*w + 2*w*h + 2*h*l
-            area += operator.mul(*sorted([l, w, h])[:-1])
+        limit = 4 if is_test else 15
+        lines = read_lines(fp)
+        # lines = read_lines(fp)[:limit]
+
+    matrix = tools.to_matrix(lines, " ", replace_chars="[]")
+    tools.bitmap_print_matrix(matrix)
+    print(tools.get_vectors(matrix, str_join=True))
+    #
+    # l, w, h = [int(i) for i in re.findall(r"\d+", line)]
+    # area += 2*l*w + 2*w*h + 2*h*l
+    # area += operator.mul(*sorted([l, w, h])[:-1])
 
     return area
 
@@ -88,14 +92,5 @@ if __name__ == "__main__":
     watch -n 3 python3 -m aoc.year_2021.day_03.day -p
     """
     poll_printer = PollPrinter(solve_1, solve_2, challenge_solve_1, challenge_solve_2, test_input, puzzle_input)
-    args = sys.argv[1:]
-    if not args:
-        poll_printer.print_timed()
-    elif re.match("^-poll$|^-p$", args[0]):
-        poll_printer.poll_print()
-    elif re.match("^-json1$|^-j1$", args[0]):
-        poll_printer.poll_json_1()
-    elif re.match("^-json2$|^-j2$", args[0]):
-        poll_printer.poll_json_2()
-
+    poll_printer.run(sys.argv)
 
