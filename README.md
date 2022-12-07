@@ -1,28 +1,27 @@
-# Advent of Code
+# 🎄 Advent of Code 🎄 2022 🎄
 
-Allows for semi-automated browser advent-of-code submittions. Verified with Brave.
+Install: `requirements install -r requirements.txt`
+  
+Run `python3 aoc/year_2022/day_07/solve.py`
 
-## Running
+Test: Use IDE :)
 
-1. Open Python project.
-2. Copy previous day to the next
-3. Open powershell terminal in `aoc/solvewatcher`.
-4. Execute `./brave.ps1`.
+*Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
-Start with:
-```sh
-# For awaiting "todays" puzzle:
-node .\main.js
+```
+PASSED                      [  7%]test: 1: 1.002ms
+PASSED                      [ 14%]test: 1: 0.0ms
+PASSED                      [ 21%]test: 2: 0.999ms
+PASSED                      [ 28%]test: 2: 1.0ms
+PASSED                      [ 35%]test: 3: 1.0ms
+PASSED                      [ 42%]test: 3: 1.0ms
+PASSED                      [ 50%]test: 4: 1.999ms
+PASSED                      [ 57%]test: 4: 4.0ms
+PASSED                      [ 64%]test: 5: 2.0ms
+PASSED                      [ 71%]test: 5: 2.0ms
+PASSED                      [ 78%]test: 6: 0.0ms
+PASSED                      [ 85%]test: 6: 2.0ms
+PASSED                      [ 92%]test: 7: 4.997ms
+PASSED                      [100%]test: 7: 5.0ms
 
-# Or a specific other day with:
-node .\main.js "2022-12-01"
-```  
-
-## Setup
-Install with `pip install -r requirements` in root `aoc`-folder in an activated virtual environment. Then install the
-browser automation with `npm -i` in `aoc/solutionwatcher`. It awaits the games starting, downloads puzzle input and
-then evaluates candidate solutions if they pass a check against `_test == <solve_1>` and `__test == <solve_2>`
-respectively.
-
-> It's recommended to use Python 3.9 to 3.10 for now as 3.11 is having some issues with several modules in pip (as of 
-2022-12-01).  
+```

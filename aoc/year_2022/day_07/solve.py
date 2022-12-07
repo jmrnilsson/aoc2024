@@ -110,11 +110,6 @@ def solve_1(input_=None):
     test=95437
     expect=1350966
     """
-    is_test = 1 if "test" in input_ else 0
-    root = Node(".", None)
-    all_ = set()
-    all_.add(root)
-
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
 
