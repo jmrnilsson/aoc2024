@@ -1,14 +1,10 @@
-import heapq
-import json
-import operator
+import re
 import re
 import sys
-from collections import Counter, OrderedDict, defaultdict
+from enum import Enum
+from typing import TypeVar, Generic
 
-import numpy as np
-
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 # ICE
@@ -24,20 +20,22 @@ challenge_solve_2 = "exception"
 
 sys.setrecursionlimit(1100)
 
+T = TypeVar('T')
 
-class Node(object):
+
+class Node(Generic[T]):
     parent = None
-    name = None
-    size = 0
-    children = []
-    seen_files = set()
+    name: str = None
+    size: int = 0
+    children: dict[str, Generic[T]] = []
+    seen_files: set[tuple[str, int]] = set()
 
-    def __init__(self, name: str, parent: object):
-        self.parent = parent
+    def __init__(self, name: str, parent: Generic[T]):
+        self.parent: Generic[T] = parent
         self.name: str = name
-        self.children = []
+        self.children = {}
         self.files = set()
-        self.seen_files = set()
+        self.seen_files: set[str] = set()
 
     def __hash__(self):
         return hash(self.get_path())
@@ -57,8 +55,8 @@ class Node(object):
         return "/".join(reversed(path))
 
     def add_child(self, child):
-        if child.name not in set(c.name for c in self.children):
-            self.children.append(child)
+        if child.name not in self.children.keys():
+            self.children[child.name] = child
             return True
         return False
 
@@ -70,55 +68,40 @@ class Node(object):
                 self.parent.add_file(file, size)
 
 
+class Command(Enum):
+    LS = r"^\$ ls"
+    CD_DOT_DOT = r"^\$ cd .."
+    CD = r"^\$ cd (\w+)"
+    DIR = r"^dir (\w+)"
+    FILE = r"^(\d+) ([\w\.]+)"
+
+
 def traverse(lines: list[str]):
-    count = 1
     root = Node(".", None)
-    all_ = set()
-    all_.add(root)
-    seen_ls = set()
-    current_dir = root
-    ls_operation = False
-    n = 0
+    all_, current_dir, ls_command = {root}, root, False
     for line in lines[1:]:
-        n += 1
-        dir_ = re.findall(r"^\$ cd (\w+)", line)
-        if dir_:  # cd
-            folder_name = dir_[0]
-            swap, = [f for f in current_dir.children if f.name == folder_name]
-            added = current_dir.add_child(swap)
-            if not added:
-                all_.add(swap)
-            current_dir = swap
-            ls_operation = False
-            count += 1
+        if folder := re.findall(Command.CD.value, line):
+            current_dir, ls_command = current_dir.children[folder[0]], False
+            _ = current_dir.add_child(current_dir)
+            all_.add(current_dir)
             continue
 
-        cd_dot_dot = re.findall(r"^\$ cd ..", line)
-        if cd_dot_dot:  # cd..
-            swap = current_dir.parent
-            if swap:
-                current_dir = swap
+        if re.findall(Command.CD_DOT_DOT.value, line):
+            current_dir = current_dir.parent
             continue
 
-        ls = re.findall(r"^\$ ls", line)
-        if ls:  # ls
-            ls_operation = True if current_dir.get_path() not in seen_ls else False
-            seen_ls.add(current_dir.name)
+        if re.findall(Command.LS.value, line):
+            ls_command = True
             continue
 
-        if ls_operation:
-            folder = re.findall(r"^dir (\w+)", line)
-            if folder:
-                fold = Node(folder[0], current_dir)
-                if fold not in current_dir.children:
-                    current_dir.add_child(fold)
-                continue
+        if ls_command and (folder := re.findall(Command.DIR.value, line)):
+            current_dir.add_child(Node(folder[0], current_dir))
+            continue
 
-            file = re.findall(r"^(\d+) ([\w\.]+)", line)
-            if file:
-                size, name = file[0]
-                current_dir.add_file(f"{current_dir}/{name}", int(size))
-                continue
+        if ls_command and (file := re.findall(Command.FILE.value, line)):
+            current_dir.add_file(f"{current_dir}/{file[0][1]}", int(file[0][0]))
+            continue
+
     return root, all_
 
 

@@ -1,5 +1,4 @@
 import re
-import re
 import sys
 
 from aoc.helpers import locate, build_location, read_lines

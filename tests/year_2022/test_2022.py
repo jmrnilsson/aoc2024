@@ -1,4 +1,3 @@
-import datetime
 import importlib
 import time
 import unittest
@@ -8,7 +7,15 @@ import pytest
 import aoc.year_2022.day_01.solve as solve
 import aoc.year_2022.day_02.solve as solve_2
 from aoc.helpers import locate, build_location_test
+import importlib
+import time
+import unittest
 
+import pytest
+
+import aoc.year_2022.day_01.solve as solve
+import aoc.year_2022.day_02.solve as solve_2
+from aoc.helpers import locate, build_location_test
 
 solutions = [
     [24000, 69281, 45000, 201524],
@@ -50,7 +57,7 @@ def test_day(func_name, test_input, day, expected):
     te = time.time_ns()
     # te = datetime.datetime.utcnow()
     diff = (te - ts) / 1e6
-    print(f"test: {day}: {round(diff, 2)}ms")
+    print(f"test: {day}: {round(diff, 3)}ms")
     assert actual == expected
 
 

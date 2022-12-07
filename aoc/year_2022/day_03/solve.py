@@ -1,13 +1,10 @@
-import json
-import operator
+import re
 import re
 import sys
-from collections import Counter, OrderedDict
 
-import numpy as np
 from more_itertools import chunked
 
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor
+from aoc.helpers import locate, build_location
 from aoc.poll_printer import PollPrinter
 
 # ICE

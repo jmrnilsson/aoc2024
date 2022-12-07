@@ -1,15 +1,10 @@
-import json
-import operator
+import re
 import re
 import sys
-from collections import Counter, OrderedDict, defaultdict
 
-import more_itertools
-import numpy as np
 from more_itertools import sliding_window
 
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 # ICE
