@@ -1,8 +1,7 @@
 import re
-import re
 import sys
 from enum import Enum
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Set, Tuple, Dict, List
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
@@ -27,15 +26,15 @@ class Node(Generic[T]):
     parent = None
     name: str = None
     size: int = 0
-    children: dict[str, Generic[T]] = []
-    seen_files: set[tuple[str, int]] = set()
+    children = []
+    seen_files: Set[Tuple[str, int]] = set()
 
     def __init__(self, name: str, parent: Generic[T]):
         self.parent: Generic[T] = parent
         self.name: str = name
-        self.children = {}
+        self.children: Dict[str, Generic[T]] = {}
         self.files = set()
-        self.seen_files: set[str] = set()
+        self.seen_files: Set[str] = set()
 
     def __hash__(self):
         return hash(self.get_path())
@@ -76,7 +75,7 @@ class Command(Enum):
     FILE = r"^(\d+) ([\w\.]+)"
 
 
-def traverse(lines: list[str]):
+def traverse(lines: List[str]):
     root = Node(".", None)
     all_, current_dir, ls_command = {root}, root, False
     for line in lines[1:]:
@@ -84,23 +83,21 @@ def traverse(lines: list[str]):
             current_dir, ls_command = current_dir.children[folder[0]], False
             _ = current_dir.add_child(current_dir)
             all_.add(current_dir)
-            continue
 
-        if re.findall(Command.CD_DOT_DOT.value, line):
+        elif re.findall(Command.CD_DOT_DOT.value, line):
             current_dir = current_dir.parent
-            continue
 
-        if re.findall(Command.LS.value, line):
+        elif re.findall(Command.LS.value, line):
             ls_command = True
-            continue
 
-        if ls_command and (folder := re.findall(Command.DIR.value, line)):
+        elif ls_command and (folder := re.findall(Command.DIR.value, line)):
             current_dir.add_child(Node(folder[0], current_dir))
-            continue
 
-        if ls_command and (file := re.findall(Command.FILE.value, line)):
+        elif ls_command and (file := re.findall(Command.FILE.value, line)):
             current_dir.add_file(f"{current_dir}/{file[0][1]}", int(file[0][0]))
-            continue
+
+        else:
+            raise ValueError("Command not parsed")
 
     return root, all_
 
@@ -113,9 +110,8 @@ def solve_1(input_=None):
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
 
-    _, all_ = traverse(lines)
-
-    return sum(n.size for n in all_ if n.size <= 100000)
+    _, nodes = traverse(lines)
+    return sum(n.size for n in nodes if n.size <= 100000)
 
 
 def solve_2(input_=None):

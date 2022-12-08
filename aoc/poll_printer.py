@@ -6,6 +6,7 @@ import traceback
 from collections import Counter, OrderedDict
 from functools import wraps
 from time import perf_counter
+from typing import List
 
 import numpy as np
 
@@ -49,6 +50,17 @@ class PollPrinter(object):
         self.challenge_2 = challenge_2
         self.test_input = test_input
         self.puzzle_input = puzzle_input
+
+    def run(self, argv: List[str]):
+        args = argv[1:]
+        if not args:
+            self.print_timed()
+        elif re.match("^-poll$|^-p$", args[0]):
+            self.poll_print()
+        elif re.match("^-json1$|^-j1$", args[0]):
+            self.poll_json_1()
+        elif re.match("^-json2$|^-j2$", args[0]):
+            self.poll_json_2()
 
     def poll_json_1(self):
         test = self.solve_1(self.test_input)
