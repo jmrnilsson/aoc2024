@@ -8,7 +8,7 @@
 *Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
 
-## year_2022/day_08/solve.py
+## year_2022 day_08 solve.py
 
 ```py
 import operator
@@ -84,7 +84,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_07/solve.py
+## year_2022 day_07 solve.py
 
 ```py
 import re
@@ -205,7 +205,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_06/solve.py
+## year_2022 day_06 solve.py
 
 ```py
 import re
@@ -232,7 +232,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_05/solve.py
+## year_2022 day_05 solve.py
 
 ```py
 import re
@@ -304,7 +304,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_04/solve.py
+## year_2022 day_04 solve.py
 
 ```py
 import re
@@ -352,7 +352,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_03/solve.py
+## year_2022 day_03 solve.py
 
 ```py
 import re
@@ -398,7 +398,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_03/solve.js
+## year_2022 day_03 solve.js
 
 ```javascript
 const { timeEnd } = require('node:console');
@@ -493,7 +493,7 @@ async function start(argv) {
 
 start(process.argv);
 ```
-## year_2022/day_02/solve.py
+## year_2022 day_02 solve.py
 
 ```py
 import re
@@ -600,7 +600,7 @@ def solve_2(input_=None):
 
 
 ```
-## year_2022/day_01/solve.py
+## year_2022 day_01 solve.py
 
 ```py
 import re
