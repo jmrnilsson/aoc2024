@@ -1,7 +1,7 @@
 import re
 import sys
 
-from aoc.helpers import locate, build_location
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 # ICE
@@ -17,10 +17,6 @@ challenge_solve_2 = 12
 
 
 def solve_1(input_=None):
-    """
-    test=15
-    expect=13565
-    """
     feed = []
 
     lookup = {
@@ -33,9 +29,7 @@ def solve_1(input_=None):
     }
 
     with open(locate(input_), "r") as fp:
-        for line in fp.readlines():
-            if line == "\n":
-                continue
+        for line in read_lines(fp):
             other, me = line.split(" ")
             me_ = me.replace("\n", "")
             feed.append((lookup[other], lookup[me_]))
@@ -63,10 +57,6 @@ def solve_1(input_=None):
 
 
 def solve_2(input_=None):
-    """
-    test=12
-    expect=12424
-    """
     feed = []
     lookup = {
         "A": "ROCK",
@@ -78,9 +68,7 @@ def solve_2(input_=None):
     }
 
     with open(locate(input_), "r") as fp:
-        for line in fp.readlines():
-            if line == "\n":
-                continue
+        for line in read_lines(fp):
             other, me = line.split(" ")
             me_ = me.replace("\n", "")
             me__ = None

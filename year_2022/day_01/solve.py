@@ -1,5 +1,4 @@
 import re
-import re
 import sys
 
 from aoc.helpers import locate, build_location
@@ -18,10 +17,6 @@ challenge_solve_2 = 70
 
 
 def solve_1(input_=None):
-    """
-    test=24000
-    expect=69281
-    """
     feed = [0]
 
     with open(locate(input_), "r") as fp:
@@ -35,10 +30,6 @@ def solve_1(input_=None):
 
 
 def solve_2(input_=None):
-    """
-    test=45000
-    expect=201524
-    """
     feed = [0]
 
     with open(locate(input_), "r") as fp:

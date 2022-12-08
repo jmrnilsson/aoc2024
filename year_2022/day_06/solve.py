@@ -1,8 +1,7 @@
 import re
-import re
 import sys
 
-from more_itertools import sliding_window
+from more_itertools import sliding_window as win
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
@@ -20,35 +19,19 @@ challenge_solve_2 = "exception"
 
 
 def solve_1(input_=None):
-    """
-    test=7
-    expect=1198
-    """
-    start = 4 if "test" in input_ else 9
-
     with open(locate(input_), "r") as fp:
-        lines = read_lines(fp)[:start]
+        lines = read_lines(fp)
 
     n = 4
-    for i, w in enumerate(sliding_window(list(lines[0]), n)):
-        if len(set(w)) == n:
-            return i + n
+    return next(i for i, c in enumerate(win(list(lines[0]), n)) if len(set(c)) == n) + n
 
 
 def solve_2(input_=None):
-    """
-    test=19
-    expect=3120
-    """
-    start = 4 if "test" in input_ else 9
-
     with open(locate(input_), "r") as fp:
-        lines = read_lines(fp)[:start]
+        lines = read_lines(fp)
 
     n = 14
-    for i, w in enumerate(sliding_window(list(lines[0]), n)):
-        if len(set(w)) == n:
-            return i + n
+    return next(i for i, c in enumerate(win(list(lines[0]), n)) if len(set(c)) == n) + n
 
 
 if __name__ == "__main__":

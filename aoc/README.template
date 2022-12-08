@@ -1,0 +1,11 @@
+# 🎄 Advent of Code 2022 🎄
+
+- Install: `requirements install -r requirements.txt`
+- Run `python3 year_2022/day_07/solve.py`
+- Test: Use IDE :)
+- Generate README: `python aoc/template.py`
+
+*Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
+
+$code
+

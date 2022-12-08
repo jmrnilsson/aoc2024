@@ -37,10 +37,6 @@ def stack_inverted(input_, start):
 
 
 def solve_1(input_=None):
-    """
-    test=CMZ
-    expect=VJSFHWGFT
-    """
     start = 4 if "test" in input_ else 9
     crates = stack_inverted(input_, start)
 
@@ -54,15 +50,10 @@ def solve_1(input_=None):
                 n -= 1
             step += 1
 
-    _ = ""
     return str.join("", [li[-1] for li in crates.values()])
 
 
 def solve_2(input_=None):
-    """
-    test=MCD
-    expect=LCTQFBVZV
-    """
     start = 4 if "test" in input_ else 9
     crates = stack_inverted(input_, start)
 

@@ -1,17 +1,13 @@
-import json
 import operator
-import re
+import operator
 import sys
-from collections import Counter, OrderedDict, defaultdict
+from collections import defaultdict
 from functools import reduce
 from itertools import takewhile, product
 
-import numpy as np
-
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
-from aoc.tools import get_vectors, to_matrix, _find_vectors, matrix_try_get, transpose
+from aoc.tools import transpose
 
 # ICE
 _default_puzzle_input = "year_2022/day_01/puzzle.txt"
@@ -64,6 +60,7 @@ def solve_2(input_=None):
     test=58
     expect=1598415
     """
+    is_test = 1 if "test" in input_ else 0
     scenic = defaultdict(list)
 
     with open(locate(input_), "r") as fp:
