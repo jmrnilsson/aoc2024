@@ -12,7 +12,6 @@
 
 ```py
 import operator
-import operator
 import sys
 from collections import defaultdict
 from functools import reduce
@@ -33,12 +32,12 @@ def solve_1(input_=None):
     y_range = [("y", n, axis) for n, axis in enumerate(matrix)]
     x_range = [("x", n, axis) for n, axis in enumerate(transpose(matrix))]
     visible_trees = set()
-    for dim, y_or_x, _axis in y_range + x_range:
+    for axis, _k, _k_range in y_range + x_range:
         for reverse in (False, True):
             ceiling = -1
-            axis = enumerate(_axis) if not reverse else reversed(list(enumerate(_axis)))
-            for n, tree in axis:
-                coords = (y_or_x, n) if dim == "y" else (n, y_or_x)
+            k_range = enumerate(_k_range) if not reverse else reversed(list(enumerate(_k_range)))
+            for n, tree in k_range:
+                coords = (_k, n) if axis == "y" else (n, _k)
                 if tree > ceiling:
                     visible_trees.add(coords)
                 ceiling = max(tree, ceiling)
@@ -46,7 +45,7 @@ def solve_1(input_=None):
     return sum(1 for _ in visible_trees)
 
 
-def count_while_less_than_pad_last(k_range, value):
+def count_while_less_than_add_one(k_range, value):
     total = sum(1 for _ in takewhile(lambda v: v < value, k_range))
     total += 1 if len(k_range) > total else 0
     return total
@@ -61,7 +60,6 @@ def solve_2(input_=None):
     test=58
     expect=1598415
     """
-    is_test = 1 if "test" in input_ else 0
     scenic = defaultdict(list)
 
     with open(locate(input_), "r") as fp:
@@ -70,16 +68,14 @@ def solve_2(input_=None):
     transposed = transpose(matrix)
     x_len, y_len = len(matrix[0]), len(matrix)
     for y, x in product(range(0, y_len), range(0, x_len)):
-        x_range = matrix[y]
-        y_range = transposed[x]
-        value = matrix[y][x]
+        x_range, y_range, value = matrix[y],  transposed[x], matrix[y][x]
         down, up = splice_at(y_range, y)
         right, left = splice_at(x_range, x)
         view = [
-            count_while_less_than_pad_last(right, value),
-            count_while_less_than_pad_last(left, value),
-            count_while_less_than_pad_last(down, value),
-            count_while_less_than_pad_last(up, value)
+            count_while_less_than_add_one(right, value),
+            count_while_less_than_add_one(left, value),
+            count_while_less_than_add_one(down, value),
+            count_while_less_than_add_one(up, value)
         ]
         scenic[(y, x)] = view
 
