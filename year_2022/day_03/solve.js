@@ -3,16 +3,16 @@ const {readFile} = require('node:fs/promises');
 
 /*
 # ICE
-_default_puzzle_input = "year_2022/day_01/puzzle.txt"
-_default_test_input = "year_2022/day_01/test.txt"
+_default_puzzle_input = 'year_2022/day_01/puzzle.txt'
+_default_test_input = 'year_2022/day_01/test.txt'
 
-puzzle_input = build_location(__file__, "puzzle.txt")
-test_input = build_location(__file__, "test.txt")
-test_input_2 = build_location(__file__, "test_2.txt")
+puzzle_input = build_location(__file__, 'puzzle.txt')
+test_input = build_location(__file__, 'test.txt')
+test_input_2 = build_location(__file__, 'test_2.txt')
 */
 
-const test_input = "aoc\\year_2022\\day_03_extras_javascript\\test.txt";
-const puzzle_input = "aoc\\year_2022\\day_03_extras_javascript\\puzzle.txt";
+const test_input = 'aoc\\year_2022\\day_03_extras_javascript\\test.txt';
+const puzzle_input = 'aoc\\year_2022\\day_03_extras_javascript\\puzzle.txt';
 
 const challenge_solve_1 = 157
 const challenge_solve_2 = 70
@@ -74,17 +74,17 @@ async function timed(func_name, ...args){
     ts = performance.now();
     const answer = await func(...args)
     ms = (performance.now() - ts).toFixed(4);
-    const name = args[0].match("(test|puzzle)", 'i')[1];
-    return `${func_name} - ${name.padEnd(6," ")} (${ms}ms):`.padEnd(33," ") + answer;
+    const name = args[0].match('(test|puzzle)', 'i')[1];
+    return `${func_name} - ${name.padEnd(6,' ')} (${ms}ms):`.padEnd(33,' ') + answer;
 }
 
 
 async function start(argv) {
-    console.log(await timed("solve1", test_input));
-    console.log(await timed("solve1", puzzle_input));
-    console.log(await timed("solve2", test_input));
-    console.log(await timed("solve2", puzzle_input));
-    console.log("\nDone!");
+    console.log(await timed('solve1', test_input));
+    console.log(await timed('solve1', puzzle_input));
+    console.log(await timed('solve2', test_input));
+    console.log(await timed('solve2', puzzle_input));
+    console.log('\nDone!');
     process.exit();
 }
 

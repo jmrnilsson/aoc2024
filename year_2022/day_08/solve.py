@@ -22,8 +22,8 @@ challenge_solve_2 = "exception"
 
 def solve_1(input_=None):
     """
-    test=58
-    expect=1598415
+    test=21
+    expect=1713
     """
     with open(locate(input_), "r") as fp:
         matrix = [[int(d) for d in list(line)] for line in read_lines(fp)]
@@ -56,8 +56,8 @@ def splice_at(k_range, n):
 
 def solve_2(input_=None):
     """
-    test=58
-    expect=1598415
+    test=8
+    expect=268464
     """
     scenic = defaultdict(list)
 

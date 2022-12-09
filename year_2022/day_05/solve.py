@@ -1,5 +1,4 @@
 import re
-import re
 import sys
 
 from aoc import tools

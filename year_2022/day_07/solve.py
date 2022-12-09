@@ -116,8 +116,8 @@ def solve_1(input_=None):
 
 def solve_2(input_=None):
     """
-    test=58
-    expect=1598415
+    test=24933642
+    expect=6296435
     """
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
