@@ -8,11 +8,257 @@
 *Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
 
+## year_2022/day_11/solve.py
+
+```py
+import math
+import math
+import re
+import sys
+from enum import Enum
+from functools import reduce
+from typing import Tuple, List
+from more_itertools import chunked
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+class Monkey(object):
+    def __init__(self, name: int, items: List[int], operation, divisor: int, targets: Tuple[int, int]):
+        self.name: int = name
+        self.operation = operation
+        self.items: List[int] = items
+        self.inspections = 0
+        self.test_divisor: int = divisor
+        self.targets: Tuple[int, int] = targets
+        self.other_monkeys = None
+        self.lcm = None
+        self.custom_divisor = None
+
+    def __repr__(self):
+        return self.name
+
+    def thrown_at(self, item):
+        self.items.append(item)
+
+    def befriend(self, other_monkeys):
+        self.other_monkeys = other_monkeys
+
+    def add_lcm(self, _lcm):
+        self.lcm = _lcm
+
+    def business(self):
+        for item in self.items:
+            self.inspections += 1
+            worry_level = self.operation(item)
+            worry_modulus = worry_level % self.lcm
+
+            if worry_level > self.lcm * 2:
+                worry_level = self.lcm + worry_modulus
+
+            if self.custom_divisor:
+                worry_level //= self.custom_divisor
+
+            if worry_level // self.test_divisor == worry_level / self.test_divisor:
+                self.other_monkeys[self.targets[0]].thrown_at(worry_level)
+            else:
+                self.other_monkeys[self.targets[1]].thrown_at(worry_level)
+
+        self.items.clear()
+
+
+def lcm(a, b):
+    return abs(a * b) // math.gcd(a, b)
+
+
+class Day11Operation(Enum):
+    POW2 = r"new = old \* old"
+    MUL = r"new = old \* (\d+)"
+    ADD = r"new = old \+ (\d+)"
+
+
+def parse_monkey(monkey: List[str]):
+    name = int(re.findall(r"(\d+)", monkey[0])[0])
+    items = [int(i) for i in re.findall(r"(\d+)", monkey[1])]
+    operation = None
+    for operation_match in list(Day11Operation):
+        if match := re.findall(operation_match.value, monkey[2]):
+            if operation_match == Day11Operation.POW2:
+                operation = lambda old: math.pow(old, 2)
+            elif operation_match == Day11Operation.MUL:
+                operation = lambda old: old * int(match[0])
+            elif operation_match == Day11Operation.ADD:
+                operation = lambda old: old + int(match[0])
+            break
+    assert operation
+    divisor = int(re.findall(r"(\d+)", monkey[3])[0])
+    targets = int(re.findall(r"(\d+)", monkey[4])[0]), int(re.findall(r"(\d+)", monkey[5])[0])
+    return Monkey(name, items, operation, divisor, targets)
+
+
+def do_monkey_business(monkeys: List[Monkey], n: int):
+    divisors = []
+    for monkey in monkeys:
+        divisors.append(monkey.test_divisor)
+        monkey.befriend(monkeys)
+
+    _lcm = reduce(lcm, divisors)
+
+    for monkey in monkeys:
+        monkey.add_lcm(_lcm)
+
+    for n in range(0, n):
+        for monkey in monkeys:
+            monkey.business()
+
+    inspections = [m.inspections for m in monkeys]
+    inspections.sort(key=lambda x: x, reverse=True)
+    return inspections[0] * inspections[1]
+
+
+def solve_1(input_=None):
+    """
+    test=10605
+    expect=54253
+    """
+    monkeys: List[Monkey] = []
+
+    with open(locate(input_), "r") as fp:
+        for monkey in chunked(read_lines(fp), 6):
+            monkey_object = parse_monkey(monkey)
+            monkeys.append(monkey_object)
+            monkey_object.custom_divisor = 3
+
+    return do_monkey_business(monkeys, 20)
+
+
+def solve_2(input_=None):
+    """
+    test=2713310158
+    expect=13119526120
+    """
+    monkeys: List[Monkey] = []
+
+    with open(locate(input_), "r") as fp:
+        for monkey in chunked(read_lines(fp), 6):
+            monkey_object = parse_monkey(monkey)
+            monkeys.append(monkey_object)
+
+    return do_monkey_business(monkeys, 10_000)
+
+
+```
+## year_2022/day_10/solve.py
+
+```py
+import re
+import re
+import sys
+from enum import Enum
+from typing import List, Tuple, Dict
+from defaultlist import defaultlist
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+class Day10Operation(Enum):
+    ADDX = "addx"
+    NOOP = "noop"
+
+
+def compute(instructions: List[Tuple[Day10Operation, int]], until=260):
+    x_s: List[int] = []
+    x: int = 1
+    i: int = 0
+    op: Day10Operation
+    number: int
+    thread_join: Dict[int, int] = {}
+    for n in range(0, until):
+        x_s.append(x)
+        canonical_x = thread_join.get(n)
+        if canonical_x:
+            x = canonical_x
+            continue
+
+        op, digit = instructions[i] if i < len(instructions) else (Day10Operation.NOOP, -1)
+        if op == Day10Operation.ADDX:
+            thread_join[n + 1] = x + digit
+            i += 1
+        elif op == Day10Operation.NOOP:
+            i += 1
+    return x_s
+
+
+def solve_1(input_=None):
+    """
+    test=13140
+    expect=13520
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    lines: List[Tuple[Day10Operation, int]] = []
+    with open(locate(input_), "r") as fp:
+        for line in read_lines(fp):
+            operation = re.findall(r"^(\w+)?", line)[0]
+            number = int(line.replace(operation, "").strip()) if operation == "addx" else -1
+            lines.append((Day10Operation(operation), number))
+
+    x_s: List[int] = compute(lines, until=230)
+    signal = [v * (n + 1) for n, v in enumerate(x_s)]
+    at = [20, 60, 100, 140, 180, 220]
+    selected = [(i + 1, v) for i, v in enumerate(signal) if i + 1 in at]
+
+    return sum(v for _, v in selected)
+
+
+def solve_2(input_=None):
+    """
+    test=##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....
+    expect=###...##..###..#..#.###..####..##..###..
+#..#.#..#.#..#.#..#.#..#.#....#..#.#..#.
+#..#.#....#..#.####.###..###..#..#.###..
+###..#.##.###..#..#.#..#.#....####.#..#.
+#....#..#.#....#..#.#..#.#....#..#.#..#.
+#.....###.#....#..#.###..####.#..#.###..
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    lines: List[Tuple[Day10Operation, int]] = []
+    with open(locate(input_), "r") as fp:
+        for line in read_lines(fp):
+            operation = re.findall(r"^(\w+)?", line)[0]
+            number = int(line.replace(operation, "").strip()) if operation == "addx" else -1
+            lines.append((Day10Operation(operation), number))
+
+    x_s = compute(lines, until=260)
+
+    acc = defaultlist(list)
+    default_sprite = "........................................"
+    for i in range(0, len(x_s)):
+        x = x_s[i]
+        write_out = [x - 1, x, x + 1]
+        mod_sprite = list(default_sprite)
+        for w in write_out:
+            mod_sprite[w] = "#"
+        sprite = "".join(mod_sprite)
+        pixel_index, row = i % len(sprite), i // len(sprite)
+        acc[row].append(sprite[pixel_index])
+
+    return "\n" + "\n".join(["".join(row) for row in acc[:6]])
+
+
+```
 ## year_2022/day_09/solve.py
 
 ```py
 import sys
 from typing import Tuple, Set, List, Dict
+import numpy as np
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
@@ -51,7 +297,7 @@ def solve_1(input_=None):
     test=13
     expect=6314
     """
-    # test = 1 if "test" in input_ else 0
+    test = 1 if "test" in input_ else 0
     lines: List[Tuple[str, str, int]] = []
     position: Tuple[int, int] = 0, 0
     tail_position: Tuple[int, int] = position
@@ -64,7 +310,7 @@ def solve_1(input_=None):
             proper_direction = translation[silly_direction]
             lines.append((proper_direction, silly_direction, int(amount)))
 
-    # n = 0
+    n = 0
     for direction, silly_direction, amount in lines:
         destination = move(direction, position, amount)
 
@@ -74,14 +320,14 @@ def solve_1(input_=None):
             tail_position = follow(position, tail_position)
             trail.add(tail_position)
 
-            # if test:
-            #     matrix_out = np.zeros((6, 5))
-            #     matrix_out[position] = 1
-            #     matrix_out[tail_position] = 2
-            #     tr = np.transpose(matrix_out)
-            #     tr = np.flip(tr, 0)
-            #     print(f"{n}: {silly_direction} {amount}\n{tr}\n")
-            #     n += 1
+            if test:
+                matrix_out = np.zeros((6, 5))
+                matrix_out[position] = 1
+                matrix_out[tail_position] = 2
+                tr = np.transpose(matrix_out)
+                tr = np.flip(tr, 0)
+                print(f"{n}: {silly_direction} {amount}\n{tr}\n")
+                n += 1
 
     return sum(1 for _ in trail)
 

@@ -1,6 +1,8 @@
 import sys
 from typing import Tuple, Set, List, Dict
 
+import numpy as np
+
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
@@ -50,7 +52,7 @@ def solve_1(input_=None):
     test=13
     expect=6314
     """
-    # test = 1 if "test" in input_ else 0
+    test = 1 if "test" in input_ else 0
     lines: List[Tuple[str, str, int]] = []
     position: Tuple[int, int] = 0, 0
     tail_position: Tuple[int, int] = position
@@ -63,7 +65,7 @@ def solve_1(input_=None):
             proper_direction = translation[silly_direction]
             lines.append((proper_direction, silly_direction, int(amount)))
 
-    # n = 0
+    n = 0
     for direction, silly_direction, amount in lines:
         destination = move(direction, position, amount)
 
@@ -73,14 +75,14 @@ def solve_1(input_=None):
             tail_position = follow(position, tail_position)
             trail.add(tail_position)
 
-            # if test:
-            #     matrix_out = np.zeros((6, 5))
-            #     matrix_out[position] = 1
-            #     matrix_out[tail_position] = 2
-            #     tr = np.transpose(matrix_out)
-            #     tr = np.flip(tr, 0)
-            #     print(f"{n}: {silly_direction} {amount}\n{tr}\n")
-            #     n += 1
+            if test:
+                matrix_out = np.zeros((6, 5))
+                matrix_out[position] = 1
+                matrix_out[tail_position] = 2
+                tr = np.transpose(matrix_out)
+                tr = np.flip(tr, 0)
+                print(f"{n}: {silly_direction} {amount}\n{tr}\n")
+                n += 1
 
     return sum(1 for _ in trail)
 
@@ -134,4 +136,3 @@ if __name__ == "__main__":
     poll_args = solve_1, solve_2, challenge_solve_1, challenge_solve_2, test_input, puzzle_input
     poll_printer = PollPrinter(*poll_args, test_input_2=test_input_2)
     poll_printer.run(sys.argv)
-
