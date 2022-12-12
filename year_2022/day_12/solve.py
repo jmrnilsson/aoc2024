@@ -152,15 +152,6 @@ def solve_2(input_=None):
             else:
                 maze[y][x] = ord(ch) - 96
 
-    x_len, y_len = len(maze[0]), len(maze)
-
-    matrix = []
-    for y in range(y_len):
-        x_range = []
-        for x in range(x_len):
-            x_range.append(maze[y][x])
-        matrix.append(x_range)
-
     maze[end[0]][end[1]] = ord("z") - 96 + 1
     starting_positions_func = np.vectorize(lambda t: t == 1)
     starting_positions = {(x, y) for x, y in np.argwhere(starting_positions_func(maze))}
