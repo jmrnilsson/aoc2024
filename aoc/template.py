@@ -101,7 +101,6 @@ def template_readme():
         for k, text in reversed(advent_of_codes.items()):
             file_type = "py" if k.endswith("py") else "javascript"
             title = re.findall("(year_.*)", k)[0]
-            # title = title.replace("/", " ")
             t = Template("\n## $title\n\n```$type\n$code```")
             codes += t.substitute(dict(title=title, code=text, type=file_type))
 

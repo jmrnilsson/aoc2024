@@ -38,7 +38,7 @@ class Monkey(object):
     def __repr__(self):
         return self.name
 
-    def thrown_at(self, item):
+    def throw_at(self, item):
         self.items.append(item)
 
     def befriend(self, other_monkeys):
@@ -60,9 +60,9 @@ class Monkey(object):
                 worry_level //= self.custom_divisor
 
             if worry_level // self.test_divisor == worry_level / self.test_divisor:
-                self.other_monkeys[self.targets[0]].thrown_at(worry_level)
+                self.other_monkeys[self.targets[0]].throw_at(worry_level)
             else:
-                self.other_monkeys[self.targets[1]].thrown_at(worry_level)
+                self.other_monkeys[self.targets[1]].throw_at(worry_level)
 
         self.items.clear()
 
