@@ -8,13 +8,124 @@
 *Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
 
+## year_2022/day_13/solve.py
+
+```py
+import json
+import operator
+import sys
+from enum import Enum
+from functools import cmp_to_key
+from itertools import zip_longest
+from more_itertools import chunked
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+class Comparison(Enum):
+    LT = -1
+    EQ = 0
+    GT = 1
+
+
+def ok_pair(left, right):
+    if left > right:
+        return Comparison.GT
+    if left < right:
+        return Comparison.LT
+
+    return Comparison.EQ
+
+
+def ok_all(left_, right_):
+    for left, right in zip_longest(left_, right_, fillvalue=-1):
+        if isinstance(left, list) and isinstance(right, list):
+            if (comparison := ok_all(left, right)) != Comparison.EQ:
+                return comparison
+
+        elif isinstance(left, int) and isinstance(right, list):
+            if left == -1:
+                return Comparison.LT
+            if (comparison := ok_all([left], right)) != Comparison.EQ:
+                return comparison
+
+        elif isinstance(left, list) and isinstance(right, int):
+            if right == -1:
+                return Comparison.GT
+            if (comparison := ok_all(left, [right])) != Comparison.EQ:
+                return comparison
+
+        elif isinstance(left, int) and isinstance(right, int):
+            if (comparison := ok_pair(left, right)) != Comparison.EQ:
+                return comparison
+
+    return Comparison.EQ
+
+
+def solve_1(input_=None):
+    """
+    test=13
+    expect=6478
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    seed = []
+
+    with open(locate(input_), "r") as fp:
+        for signal in chunked(read_lines(fp), 2):
+            left = json.loads(signal[0])
+            right = json.loads(signal[1])
+            seed.append((left, right))
+
+    n, correct = 0, []
+    for left, right in seed:
+        n += 1
+        if isinstance(left, int) and isinstance(right, int):
+            if ok_pair(left, right) == Comparison.LT:
+                correct.append(n)
+        elif isinstance(left, list) and isinstance(right, list):
+            if ok_all(left, right) == Comparison.LT:
+                correct.append(n)
+    return sum(correct)
+
+
+def compare(left, right):
+    if comparison := ok_all(left, right) == Comparison.LT:
+        return -1
+    if comparison == Comparison.GT:
+        return 1
+
+    return 0
+
+
+def solve_2(input_=None):
+
+    """
+    test=140
+    expect=21922
+    """
+
+    seed = []
+
+    with open(locate(input_), "r") as fp:
+        for signal in read_lines(fp):
+            s = json.loads(signal)
+            seed.append(s)
+
+    splicers = [[2]], [[6]]
+    seed += list(splicers)
+    seed.sort(key=cmp_to_key(compare))
+    indices = seed.index(splicers[0]) + 1, seed.index(splicers[1]) + 1
+
+    return operator.mul(*indices)
+
+
+```
 ## year_2022/day_12/solve.py
 
 ```py
-import heapq
 import sys
 from collections import defaultdict
-from typing import List
 import numpy as np
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
