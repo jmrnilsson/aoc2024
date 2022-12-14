@@ -16,6 +16,7 @@ import copy
 import sys
 from typing import Tuple, List, Callable
 import numpy as np
+from numba import jit
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
@@ -55,11 +56,11 @@ class SandPhysicsPart1(SandPhysics):
 
     def down(self, sand):
         x, y = sand
-        pristine = True
+        has_changed = False
         while self.matrix[y, x] == 0:
             y += 1
-            pristine = False
-        return x, (y - 1 if not pristine else y)
+            has_changed = True
+        return x, (y - 1 if has_changed else y)
 
 
 class SandPhysicsPart2(SandPhysics):
@@ -108,23 +109,17 @@ def pour_sand(seed: List[Tuple[int, int]], sand_physics_factory: Callable, expan
     for x, y in seed:
         matrix[y, x] = 1
 
-    n, sand_physics = 0, sand_physics_factory(matrix)
+    n, sand_physics, entry_point = 0, sand_physics_factory(matrix), (500, 0)
     while 1:
-        current_matrix = copy.deepcopy(matrix)
-
         try:
-            x, y = sand_physics.pour((500, 0))
+            n += 1
+            x, y = sand_physics.pour(entry_point)
             matrix[y, x] = 2
         except IndexError:
             break
-
-        n += 1
-
-        if np.sum(matrix) == np.sum(current_matrix):
+        if (x, y) == entry_point:
             break
-
-    is_sand = np.vectorize(lambda t: t == 2)
-    return sum(1 for _ in np.argwhere(is_sand(matrix)))
+    return n
 
 
 def solve_1(input_=None):
@@ -152,13 +147,7 @@ def solve_2(input_=None):
         for line in read_lines(fp):
             seed += list(parse_line(line))
 
-    max_x, max_y = max(x for x, _ in seed), max(y for _, y in seed)
-    matrix = np.zeros((max_y + 2, max_x + 1000))
-
-    for x, y in seed:
-        matrix[y, x] = 1
-
-    return pour_sand(seed, lambda mat: SandPhysicsPart2(mat), expand_y=1, expand_x=200)
+    return pour_sand(seed, lambda mat: SandPhysicsPart2(mat), expand_y=1, expand_x=170)
 
 
 ```
