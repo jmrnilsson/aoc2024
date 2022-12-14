@@ -1,17 +1,11 @@
 import abc
 import copy
-import json
-import operator
-import re
 import sys
-from collections import Counter, OrderedDict, defaultdict
 from typing import Tuple, List, Callable
 
 import numpy as np
-from numba import jit
 
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 # ICE
@@ -61,12 +55,11 @@ class SandPhysicsPart1(SandPhysics):
 
     def down(self, sand):
         x, y = sand
-        st = False
+        pristine = True
         while self.matrix[y, x] == 0:
             y += 1
-            st = True
-        y_ = y - 1 if st else y
-        return x, y_
+            pristine = False
+        return x, (y - 1 if not pristine else y)
 
 
 class SandPhysicsPart2(SandPhysics):
