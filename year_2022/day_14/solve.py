@@ -1,10 +1,8 @@
 import abc
-import copy
 import sys
 from typing import Tuple, List, Callable
 
 import numpy as np
-from numba import jit
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
@@ -133,7 +131,7 @@ def solve_1(input_=None):
         for line in read_lines(fp):
             seed += list(parse_line(line))
 
-    return pour_sand(seed, lambda mat: SandPhysicsPart1(mat))
+    return pour_sand(seed, lambda mat: SandPhysicsPart1(mat)) - 1  # The overflow sand not counted in the first part
 
 
 def solve_2(input_=None):
