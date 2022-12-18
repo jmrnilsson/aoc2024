@@ -8,6 +8,699 @@
 *Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
 
+## year_2022/day_18/solve.py
+
+```py
+import json
+import operator
+import re
+import sys
+from collections import Counter, OrderedDict, defaultdict
+import heapq as heap
+import numpy as np
+from aoc import tools
+from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+def solve_1(input_=None):
+    """
+    test=58
+    expect=1598415
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    pixels = set()
+    neighbors = set()
+    neighbors_n = 0
+
+    with open(locate(input_), "r") as fp:
+        for line in read_lines(fp):
+            pixel = tuple(int(i) for i in re.findall(r"\d+", line))
+            pixels.add(pixel)
+
+    for p in pixels:
+        for neighbor in von_neumann_neighbors_3d(p):
+            if neighbor not in pixels:
+                neighbors_n += 1
+
+    return neighbors_n
+
+
+def find_a_start_in_void(pixels, droplet_part):
+    for pixel in pixels:
+        for neighbor in von_neumann_neighbors_3d(pixel):
+            try:
+                if neighbor not in pixels:
+                    x, y, z = neighbor
+                    min_z = min(p[2] for p in pixels if x == p[0] and y == p[1])
+                    max_z = max(p[2] for p in pixels if x == p[0] and y == p[1])
+                    if min_z < neighbor[2] < max_z:
+                        min_x = min(p[0] for p in pixels if y == p[1] and z == p[2])
+                        max_x = max(p[0] for p in pixels if y == p[1] and z == p[2])
+                        if min_x < neighbor[0] < max_x:
+                            min_y = min(p[1] for p in pixels if z == p[2] and x == p[0])
+                            max_y = max(p[1] for p in pixels if z == p[2] and x == p[0])
+                            if min_y < neighbor[1] < max_y:
+                                if neighbor not in droplet_part:
+                                    return neighbor
+            except ValueError:
+                continue
+
+
+def solve_2(input_=None):
+    """
+    test=58
+    expect=1598415
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    pixels = set()
+    droplet = set()
+    surface_area = 0
+    void_surface_area = 0
+    void = 0
+
+    with open(locate(input_), "r") as fp:
+        for line in read_lines(fp):
+            pixel = tuple(int(i) for i in re.findall(r"\d+", line))
+            pixels.add(pixel)
+
+    for p in pixels:
+        for neighbor in von_neumann_neighbors_3d(p):
+            if neighbor not in pixels:
+                surface_area += 1
+
+    # simplified dijkstra
+    droplet = set()
+    n = 0
+    while start := find_a_start_in_void(pixels, droplet):
+
+        residual = {start}
+        seen = set()
+        while residual:
+            node = residual.pop()
+            n += 1
+            if n % 1000 == 0:
+                print(f"queue size: {len(residual)}")
+            seen.add(node)
+            droplet.add(node)
+            for neighbor in von_neumann_neighbors_3d(node):
+                if neighbor not in seen and neighbor not in pixels:
+                    residual.add(neighbor)
+
+    for p in droplet:
+        for neighbor in von_neumann_neighbors_3d(p):
+            if neighbor not in droplet and neighbor:
+                void_surface_area += 1
+
+    # 3134 too high
+    # 2226 too high
+    return surface_area - void_surface_area
+
+
+def von_neumann_neighbors_3d(p):
+    return [
+        (p[0] - 1, p[1], p[2]),
+        (p[0] + 1, p[1], p[2]),
+        (p[0], p[1] - 1, p[2]),
+        (p[0], p[1] + 1, p[2]),
+        (p[0], p[1], p[2] - 1),
+        (p[0], p[1], p[2] + 1),
+    ]
+
+```
+## year_2022/day_17/solve.py
+
+```py
+import json
+import operator
+import re
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from itertools import cycle
+from typing import List, Tuple, Callable
+import numpy as np
+from bitarray import bitarray
+from bitarray.util import ba2int
+from aoc import tools
+from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+def apply(coords: List[Tuple[int, int]], func: Callable):
+    new_coords = []
+    for coord in coords:
+        new_coords.append(func(coord))
+    return new_coords
+
+
+def center(p, name):
+    if name in ("horizontal_line", "reverse_l", "plus", "bloc"):
+        return p[0] + 2, p[1]
+    elif name in ("vertical_line"):
+        return p[0] + 2, p[1]
+    else:
+        raise ValueError(f"Unknown name: {name}")
+
+
+# simulate a rock falling down a cavern and bouncing off the walls and may be stopped by previous rocks that have fallen
+# to the ground or on top of other rocks. Can't move right or left if blocked by a rock. Can only move down if not
+# blocked by another rock. If blocked by a rock on the bottom it will stop, and another rock with different shape will
+# fall.
+def fall(movements, n=2023, is_test=True):
+    horizontal_line = [(0, 0), (1, 0), (2, 0), (3, 0)]
+    plus = [(0, 1), (1, 1), (2, 1), (1, 0), (1, 2)]
+    reverse_l = [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]
+    vertical_line = [(0, 0), (0, 1), (0, 2), (0, 3)]
+    bloc = [(0, 0), (1, 0), (0, 1), (1, 1)]
+
+    # rocks = [np.asarray(a) for a in [horizontal_line, plus, reverse_l, vertical_line, bloc]]
+    rocks_ = [horizontal_line, plus, reverse_l, vertical_line, bloc]
+    rock_names = ["horizontal_line", "plus", "reverse_l", "vertical_line", "bloc"]
+    rocks = [(n, rock)for n, rock in zip(rock_names, rocks_)]
+    walls = {-1, 7}
+    m = 0
+    max_y = 0
+    shape = set()
+    down = lambda p: (p[0], p[1] - 1)
+
+    wind = 0
+    wind_mod = len(movements)
+    for name, rock in cycle(rocks):
+        rock = apply(rock, lambda p: center(p, name))
+        out_of_bounds = 3 + max_y
+        # + (1 if name in ["horizontal_line", "plus", "reverse_l"] else 0)
+        up = lambda p: (p[0], p[1] + out_of_bounds)
+        rock = apply(rock, up)
+        y_min = min([p[1] for p in rock])
+        assert y_min - max_y == 3
+        last_rock = rock
+        breaker = False
+        while not breaker:
+            movement = movements[wind % wind_mod]
+            # for movement in movements:
+            if movement == ">":
+                sideways = lambda p: (p[0] + 1, p[1])
+            else:
+                sideways = lambda p: (p[0] - 1, p[1])
+            before_wall = rock
+            rock = apply(rock, sideways)
+            for x, y in rock:
+                if x in walls:
+                    rock = before_wall
+                elif (x, y) in shape:
+                    rock = before_wall
+            before_down = rock
+            rock = apply(rock, down)
+            for x, y in rock:
+                if y == -1:
+                    rock = before_down
+                    breaker = True
+                    # wind -= 1
+                    # if wind < 0:
+                    #     wind = len(movements) - 1
+                    break
+                elif (x, y) in shape:
+                    rock = before_down
+                    breaker = True
+                    # wind -= 1
+                    # if wind < 0:
+                    #     wind = len(movements) - 1
+                    break
+            # if not breaker:
+            wind += 1
+            # else:
+            #     wind -= 1
+            #     if wind < 0:
+            #         wind = len(movements) - 1
+
+            last_rock = rock
+
+        for coords in rock:
+            if coords[1] in shape:
+                raise ValueError(f"Duplicate y: {coords}")
+            shape.add(coords)
+
+        if is_test:
+            if m == 0:
+                assert rock == [(2, 0), (3, 0), (4, 0), (5, 0)]
+            if m == 1:
+                assert rock == [(2, 2), (3, 2), (4, 2), (3, 1), (3, 3)]
+            if m == 2:
+                assert rock == [(0, 3), (1, 3), (2, 3), (2, 4), (2, 5)]
+            if m == 3:
+                assert rock == [(4, 3), (4, 4), (4, 5), (4, 6)]
+            if m == 4:
+                assert rock == [(4, 7), (5, 7), (4, 8), (5, 8)]
+            if m == 5:
+                assert rock == [(1, 9), (2, 9), (3, 9), (4, 9)]
+
+        max_y = max([y for _, y in shape]) + 1
+        m += 1
+
+        # _max_x = max([p[0] for p in shape])
+        # display = np.zeros((max_y, _max_x + 2))
+        #
+        # for x, y in shape:
+        #     display[y, x] = 1
+        #
+        # if 5 <= m < 100:
+        #     d = np.rot90(display, 1)
+        #     d = np.rot90(d, 1)
+        #     d = np.fliplr(d)
+        #     ys = [y for y in range(d.shape[0]) if np.any(d[y, :])]
+        #     for y in ys:
+        #         print("".join(["#" if d[y, x] else "." for x in range(d.shape[1])]))
+        #
+        #     print("\n------------------\n")
+
+        if m == n - 1:
+            break
+
+    return abs(max_y)
+
+
+def get_bytes(bits):
+    done = False
+    while not done:
+        byte = 0
+        for _ in range(0, 6):
+            try:
+                bit = next(bits)
+            except StopIteration:
+                bit = 0
+                done = True
+            byte = (byte << 1) | bit
+        yield byte
+
+
+def fall_p2(movements, n=2023, is_test=True):
+    has_found_offset = False
+
+    last_seen = dict()
+    iters = defaultdict(set)
+
+    horizontal_line = [(0, 0), (1, 0), (2, 0), (3, 0)]
+    plus = [(0, 1), (1, 1), (2, 1), (1, 0), (1, 2)]
+    reverse_l = [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]
+    vertical_line = [(0, 0), (0, 1), (0, 2), (0, 3)]
+    bloc = [(0, 0), (1, 0), (0, 1), (1, 1)]
+
+    # rocks = [np.asarray(a) for a in [horizontal_line, plus, reverse_l, vertical_line, bloc]]
+    rocks_ = [horizontal_line, plus, reverse_l, vertical_line, bloc]
+    rock_names = ["horizontal_line", "plus", "reverse_l", "vertical_line", "bloc"]
+    rocks = [(n, rock)for n, rock in zip(rock_names, rocks_)]
+    walls = {-1, 7}
+    m = 0
+    max_y = 0
+    shape = set()
+    down = lambda p: (p[0], p[1] - 1)
+
+    wind = 0
+    past_movements = []
+    wind_mod = len(movements)
+    rock_n = 0
+    rock_mod = len(rocks)
+    while 1:
+        name, rock = rocks[rock_n % rock_mod]
+        rock_n += 1
+        # for name, rock in cycle(rocks):
+        # for name, rock in cycle(rocks):
+        rock = apply(rock, lambda p: center(p, name))
+        out_of_bounds = 3 + max_y
+        # + (1 if name in ["horizontal_line", "plus", "reverse_l"] else 0)
+        up = lambda p: (p[0], p[1] + out_of_bounds)
+        rock = apply(rock, up)
+        y_min = min([p[1] for p in rock])
+        assert y_min - max_y == 3
+        breaker = False
+        while not breaker:
+            movement = movements[wind % wind_mod]
+            past_movements += movement
+            # for movement in movements:
+            if movement == ">":
+                sideways = lambda p: (p[0] + 1, p[1])
+            else:
+                sideways = lambda p: (p[0] - 1, p[1])
+            before_wall = rock
+            rock = apply(rock, sideways)
+            for x, y in rock:
+                if x in walls or (x, y) in shape:
+                    rock = before_wall
+                # elif (x, y) in shape:
+                #    rock = before_wall
+            before_down = rock
+            rock = apply(rock, down)
+            for x, y in rock:
+                if y == -1:
+                    rock = before_down
+                    breaker = True
+                    break
+                elif (x, y) in shape:
+                    rock = before_down
+                    breaker = True
+                    break
+            wind += 1
+
+        for coords in rock:
+            if coords[1] in shape:
+                raise ValueError(f"Duplicate y: {coords}")
+            shape.add(coords)
+
+        if is_test:
+            if m == 0:
+                assert rock == [(2, 0), (3, 0), (4, 0), (5, 0)]
+            if m == 1:
+                assert rock == [(2, 2), (3, 2), (4, 2), (3, 1), (3, 3)]
+            if m == 2:
+                assert rock == [(0, 3), (1, 3), (2, 3), (2, 4), (2, 5)]
+            if m == 3:
+                assert rock == [(4, 3), (4, 4), (4, 5), (4, 6)]
+            if m == 4:
+                assert rock == [(4, 7), (5, 7), (4, 8), (5, 8)]
+            if m == 5:
+                assert rock == [(1, 9), (2, 9), (3, 9), (4, 9)]
+
+        max_y = max([y for _, y in shape]) + 1
+        m += 1
+
+        if not has_found_offset:
+        # if m > 30 and not has_found_offset:
+            _max_x = max([p[0] for p in shape])
+            display = np.zeros((max_y, _max_x + 2), dtype=bool)
+
+            for x, y in shape:
+                display[y, x] = 1
+
+            d = np.rot90(display, 1)
+            d = np.rot90(d, 1)
+            d = np.fliplr(d)
+            # xs = d[:5000:,] 1715?
+            xs = d[:500:,]  # 1715?
+            asda = []
+            for asdsad in xs:
+                asda.append("".join([f"%d" % (1 if d else 0) for d in asdsad]))
+            agg_x = [ba2int(bitarray(xx)) for xx in asda]
+            # for xa in xsb:
+            #     a = "!"
+            #     b = a
+            # ys = d[:,:3000]  # 1715?
+            # sum_x = xs.sum(axis=0).tolist()
+            # sum_y = xs.sum(axis=1).tolist()
+            # canon_move = [d for d in past_movements[-500:]]
+
+            key = "|".join([str(int(d)) for d in agg_x] + [name])  # + canon_move)
+            iters[key].add(m)
+            # key = tuple(sum_x + [name])
+            if key in last_seen:
+                cur = iters[key]
+
+                offset = m - last_seen[key][0]
+                y_diff = max_y - last_seen[key][1]
+                print(f"Found a duplicate at {m}")
+                print(f"Last seen at {last_seen[key][0]}")
+                print(f"Diff offset: {offset}")
+                print(f"Diff Y: {y_diff}")
+                factor_mod = (1000000000000 - m) // offset
+                # factor_mod -= 2
+                y_diff_k = (y_diff * factor_mod)
+                max_y += y_diff_k
+                m += (factor_mod * offset)
+                has_found_offset = True
+                shape = set(apply(shape, lambda p: (p[0], p[1] + y_diff_k)))
+            last_seen[key] = (m, max_y)
+
+
+        # if 5 <= m < 100:
+        #     d = np.rot90(display, 1)
+        #     d = np.rot90(d, 1)
+        #     d = np.fliplr(d)
+        #     ys = [y for y in range(d.shape[0]) if np.any(d[y, :])]
+        #     for y in ys:
+        #         print("".join(["#" if d[y, x] else "." for x in range(d.shape[1])]))
+        #
+        #     print("\n------------------\n")
+
+        if m == n - 1:
+            break
+
+    # test
+    ## 1514285714288
+    ## 1514285714288
+    # 1580758017507
+    # 1580758017507
+    # 1580758017507
+    # 1580758017507
+    return abs(max_y)
+
+
+def solve_1(input_=None):
+    """
+    test=58
+    expect=1598415
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    seed = []
+    seed_set = set()
+    seed_dict = {}
+    seed_counter = Counter()
+    seed_ordered_dict = OrderedDict()
+    seed_np = np.array([])
+    seed_np_2d = np.array([[]])
+    seed_default_dict = defaultdict(list)
+
+    area = 0
+
+    with open(locate(input_), "r") as fp:
+        lines = list(read_lines(fp)[0])
+
+    return fall(lines, 2023, bool(is_test))
+
+
+def solve_2(input_=None):
+    """
+    test=34
+    expect=3812909
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    with open(locate(input_), "r") as fp:
+        lines = list(read_lines(fp)[0])
+
+    return fall_p2(lines, 1000000000000, bool(is_test))
+
+
+```
+## year_2022/day_16/solve.py
+
+```py
+import copy
+import operator
+import heapq as heap
+import operator
+import re
+import sys
+from collections import defaultdict, Counter
+from itertools import permutations
+from queue import PriorityQueue
+from typing import Set, Tuple, Dict, List
+from more_itertools import sliding_window
+from aoc import tools
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+
+
+def dijkstra(graph, starting_node):
+    visited = set()
+    parents_map = {}
+    pq = []
+    node_costs = defaultdict(lambda: float('inf'))
+    node_costs[starting_node] = 0
+    heap.heappush(pq, (0, starting_node))
+
+    while pq:
+        # go greedily by always extending the shorter cost nodes first
+        _, node = heap.heappop(pq)
+        visited.add(node)
+
+        for neighbor in graph[node]:
+            weight = 1
+            if neighbor in visited:
+                continue
+
+            new_cost = node_costs[node] + weight
+            if node_costs[neighbor] > new_cost:
+                parents_map[neighbor] = node
+                node_costs[neighbor] = new_cost
+                heap.heappush(pq, (new_cost, neighbor))
+
+    return parents_map, node_costs
+
+
+class RoundRobinSwapBeginFromHead(object):
+
+    def __init__(self, length, from_n=0, to_n=0):
+        self.length = length
+        self.from_n = from_n
+        self.to_n = to_n
+
+    def _get_next_index(self):
+        start_n = self.from_n
+        while self.from_n == start_n or self.from_n == self.to_n:
+            if self.from_n < self.length - 1:
+                self.from_n += 1
+            else:
+                self.from_n = 0
+                if self.to_n >= self.length - 1:
+                    raise StopIteration
+                self.to_n += 1
+
+        return self.from_n, self.to_n
+
+    def _sample_from(self, iterable: List):
+        try:
+            while 1:
+                i, j = self._get_next_index()
+                iterable = copy.deepcopy(iterable)
+                swap = iterable[j]
+                iterable[j] = iterable[i]
+                iterable[i] = swap
+                yield iterable
+        except StopIteration:
+            return
+
+    def sample_from(self, *iterables: List[List]):
+        for iterable in iterables:
+            for sample in self._sample_from(iterable):
+                yield sample
+
+
+def solve_1(input_=None):
+    """
+    test=58
+    expect=1598415
+    """
+    is_test = 1 if "test" in input_ else 0
+
+    graph = {}
+    flow_rates = {}
+    nodes = []
+    start = None
+
+    with open(locate(input_), "r") as fp:
+        for line in read_lines(fp):
+            name = line[6:8]
+            flow_rate = int(re.findall(r"rate=(\d+);", line)[0])
+            leads_to = tuple(re.findall(r"[A-Z]{2}", line[10:]))
+            graph[name] = leads_to
+            flow_rates[name] = flow_rate
+            nodes.append((flow_rate, name))
+            if start is None:
+                start = name
+
+    sorted_nodes = sorted(nodes, key=lambda n: n, reverse=True)
+    results = {}
+
+    # sample = C
+    _, costs = dijkstra(graph, nodes[0][1])
+    reachable = set(costs.keys())
+
+    meaningful_nodes: List[str] = [name for flow_rates, name in sorted_nodes if flow_rates and name in reachable]
+    # state = CycleState(len(meaningful_nodes))
+
+    n = 0
+    # for node_set in [["DD", "BB", "JJ", "HH", "EE", "CC"]]:
+    # for node_set in permutations(meaningful_nodes, len(meaningful_nodes)):
+    round_robin_swap = RoundRobinSwapBeginFromHead(len(meaningful_nodes))
+    priority_queue: List[Tuple[int, List[str]]] = [(0, meaningful_nodes)]
+    seen = set()
+    counter = Counter()
+
+    while 1:
+        str_last = ",".join(priority_queue[-1][1]) if priority_queue else None
+        best = sorted([(v, k) for k, v in results.items()], key=lambda x: x[0], reverse=True)[0] if results else [0, []]
+        str_best = ",".join(best[1])
+        print(f"n: {n}, best_flow={best[0]}, best={str_best} last={str_last}")
+        counter.update({best[0]: 1})
+        if counter[best[0]] > 500 or not priority_queue:
+            break
+
+        pick = [priority_queue.pop(0)[1] for _ in range(min(3000, len(priority_queue)))]
+
+        for node_set in round_robin_swap.sample_from(*pick):
+            if tuple(node_set) in seen:
+                continue
+            seen.add(tuple(node_set))
+
+            permutations_of_nodes = list(node_set)
+            including_start = start, *[n for n in permutations_of_nodes if n != start]
+            total_cost = 0
+            total_flow_rate = 0
+            accumulated_flow_rate = 0
+            paths = []
+            last = None
+            for begin, end in sliding_window(including_start, 2):
+                path, costs = dijkstra(graph, begin)
+                cost = costs[end] + 1
+                max_cost = min([30 - total_cost, cost])
+                total_cost += cost
+                begin_flow_rate = flow_rates[begin]
+                accumulated_flow_rate += begin_flow_rate
+                total_flow_rate += max_cost * accumulated_flow_rate
+                paths.append(path)
+                last = end
+                if total_cost > 30:
+                    break
+
+            accumulated_flow_rate += flow_rates[last]
+            residual = 30 - total_cost
+            total_flow_rate += residual * accumulated_flow_rate
+            results[tuple(permutations_of_nodes)] = total_flow_rate
+            priority_queue.append((total_flow_rate, permutations_of_nodes))
+
+            n += 1
+            # if n % 10_000 == 0:
+            #     print(f"n: {n}, best={max(results.values())}, last={permutations_of_nodes}")
+            # print(f"total_flow_rate: {total_flow_rate}, path={permutations_of_nodes}")
+
+    sorted_results = sorted(results.items(), key=lambda r: r[1], reverse=True)
+    # a = sorted(results, key=lambda r: r[0], reverse=True)
+    # print(sorted_results)
+    # 1357 low
+    # 1402 low
+    return max(list(results.values()) + [0])
+
+
+def solve_2(input_=None):
+    """
+    test=34
+    expect=3812909
+    """
+    start = 1 if "test" in input_ else 0
+
+    total = 0
+    area = 0
+
+    with open(locate(input_), "r") as fp:
+        lines = read_lines(fp)[:start]
+
+    matrix = tools.to_matrix(lines, " ", replace_chars="[]")
+    tools.bitmap_print_matrix(matrix)
+    print(tools.get_vectors(matrix, str_join=True))
+
+    for line in lines:
+        if line == "\n":
+            continue
+        l, w, h = [int(i) for i in re.findall(r"\d+", line)]
+        area += operator.add(*sorted([l, w, h])[:-1])*2
+        area += l * w * h
+
+    return total
+
+
+```
 ## year_2022/day_15/solve.py
 
 ```py
@@ -418,7 +1111,6 @@ class Node:
         return '({0},{1})'.format(self.position, self.f)
 
 
-# def astar_search(_maze: List[List[int]], start, end, weight_min=0):
 def astar_search(_maze: np.ndarray, start, end, weight_min=0):
     def is_closer(_open, _neighbor):
         for _node in _open:

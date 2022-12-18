@@ -36,7 +36,6 @@ class Node:
         return '({0},{1})'.format(self.position, self.f)
 
 
-# def astar_search(_maze: List[List[int]], start, end, weight_min=0):
 def astar_search(_maze: np.ndarray, start, end, weight_min=0):
     def is_closer(_open, _neighbor):
         for _node in _open:
