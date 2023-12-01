@@ -1,7 +1,8 @@
 import itertools
 import re
 import sys
-from typing import Match, List, Dict
+from functools import reduce
+from typing import List, Dict, Tuple
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
@@ -39,6 +40,7 @@ def solve_1(input_=None):
                     first = char
             except ValueError:
                 pass
+
         digits.append(int(first + last))
 
     return sum(digits)
@@ -55,41 +57,31 @@ class DigitParser:
     def parse(self, value: str):
         i, first, j, last = float("inf"), None, -float("inf"), None
 
-        items: List[Match[str]] = [
-            match for pattern in itertools.chain([r"\d"], self.tokens.keys())
+        matches: List[Tuple[str, int, int]] = [
+            (match.group(), match.end(), self.to_integer(match.group()))
+            for pattern in itertools.chain([r"\d"], self.tokens.keys())
             for match in re.finditer(pattern, value)
         ]
 
-        for match in items:
-            group, end, value = match.group(), match.end(), self.to_integer(match.group())
+        for g, e, value in matches:
+            if e < i:
+                i, first = e, value
+            if e > j:
+                j, last = e, value
 
-            if value:
-                if end < i:
-                    i, first = end, value
-                if end > j:
-                    j, last = end, value
-
-        return first, last
-
+        return int(f"{first}{last}")
 
 def solve_2(input_=None):
     """
     test=281
     expect=53894
     """
-    digits = []
-
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
 
     digit_parser = DigitParser()
-    assert digit_parser.parse("ddgjgcrssevensix37twooneightgt") == (7, 8)
-
-    for line in lines:
-        min_digit, max_digit = digit_parser.parse(line)
-        digits.append(int(f"{min_digit}{max_digit}"))
-
-    return sum(d for d in digits)
+    assert digit_parser.parse("ddgjgcrssevensix37twooneightgt") == 78
+    return reduce(lambda a, b: a + digit_parser.parse(b), lines, 0)
 
 
 if __name__ == "__main__":
