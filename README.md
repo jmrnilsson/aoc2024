@@ -1,28 +1,18 @@
-# 🎄 Advent of Code 2023 🎄
+# 🎅 Advent of Code 2023 🎄
 
 - Install: `requirements install -r requirements.txt`
 - Run `python3 year_2023/day_07/solve.py`
-- Test: Use IDE :)
 - Generate README: `python aoc/template.py`
-
-*Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
 
 
 ## year_2023\day_01\solve.py
 
 ```py
 import itertools
-import json
-import operator
 import re
 import sys
-from collections import Counter, OrderedDict, defaultdict
-from typing import Tuple, Match, List, Dict
-import more_itertools
-import numpy as np
-from defaultlist import defaultlist
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from typing import Match, List, Dict
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 
@@ -101,4 +91,3 @@ def solve_2(input_=None):
 
 
 ```
-

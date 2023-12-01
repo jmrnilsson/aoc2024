@@ -1,17 +1,9 @@
 import itertools
-import json
-import operator
 import re
 import sys
-from collections import Counter, OrderedDict, defaultdict
-from typing import Tuple, Match, List, Dict
+from typing import Match, List, Dict
 
-import more_itertools
-import numpy as np
-from defaultlist import defaultlist
-
-from aoc import tools
-from aoc.helpers import timing, locate, Printer, build_location, test_nocolor, puzzle_nocolor, read_lines
+from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
 
 # Override only if necessary
