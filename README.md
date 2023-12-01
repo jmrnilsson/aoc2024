@@ -5,9 +5,6 @@
 - Test: Use IDE :)
 - Generate README: `python aoc/template.py`
 
-*Note:* For browser automation: https://github.com/jmrnilsson/aoc-watcher
-
-
 ## year_2023\day_01\solve.py
 
 ```py
