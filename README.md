@@ -1,7 +1,7 @@
-# 🎄 Advent of Code 2022 🎄
+# 🎄 Advent of Code 2023 🎄
 
 - Install: `requirements install -r requirements.txt`
-- Run `python3 year_2022/day_07/solve.py`
+- Run `python3 year_2023/day_07/solve.py`
 - Test: Use IDE :)
 - Generate README: `python aoc/template.py`
 
