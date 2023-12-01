@@ -1,4 +1,5 @@
-import distutils
+import codecs
+from distutils import dir_util
 import os
 import re
 from collections import OrderedDict
@@ -19,7 +20,7 @@ def mkdir_p(path: str):
 
 def copy_from_source():
     folders = []
-    for walker in os.walk("../../aoc/year_2022"):
+    for walker in os.walk("../../aoc/year_2023"):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):
                 folders.append(os.path.join(walker[0], folder))
@@ -33,12 +34,12 @@ def copy_from_source():
 
     print("")
     for source, target in source_targets:
-        distutils.dir_util.copy_tree(source, target)
+        dir_util.copy_tree(source, target)
 
 
 def template_readme():
     folders = []
-    advent_folder = os.path.join(_script_dir(), "year_2022")
+    advent_folder = os.path.join(_script_dir(), "year_2023")
     for walker in os.walk(advent_folder):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):
@@ -46,7 +47,7 @@ def template_readme():
                 folders.append(os.path.join(walker[0], sub_folder))
 
     advents_codes = []
-    folders.sort(key=lambda k: k)
+    folders.sort(key=lambda kk: kk)
     for folder in folders:
         for files_walker in os.walk(folder):
             for file in files_walker[2]:
@@ -59,9 +60,15 @@ def template_readme():
         body = []
         body_found = False
 
-        with open(advents_code, 'r') as fp:
+        if not advents_code.endswith("py"):
+            continue
+
+        with codecs.open(advents_code, mode='r', encoding="utf-8", errors='strict', buffering=-1) as fp:
             if not advents_code.endswith("py"):
-                body.append("".join(fp.readlines()))
+                text = ""
+                for line in fp.readlines():
+                    text += line
+                body.append(text)
             else:
                 for line in fp.readlines():
                     if line.startswith("from") or line.startswith("import"):
@@ -101,7 +108,6 @@ def template_readme():
         for k, text in reversed(advent_of_codes.items()):
             file_type = "py" if k.endswith("py") else "javascript"
             title = re.findall("(year_.*)", k)[0]
-            # title = title.replace("/", " ")
             t = Template("\n## $title\n\n```$type\n$code```")
             codes += t.substitute(dict(title=title, code=text, type=file_type))
 
