@@ -10,10 +10,8 @@
 ```py
 import itertools
 import re
-import sys
 from typing import Match, List, Dict
 from aoc.helpers import locate, build_location, read_lines
-from aoc.poll_printer import PollPrinter
 
 
 def solve_1(input_=None):
