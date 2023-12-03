@@ -21,8 +21,8 @@ challenge_2 = 281
 
 def solve_1(input_=None):
     """
-    test=142
-    expect=53651
+    :challenge: 142
+    :expect: 53651
     """
 
     digits = []
@@ -73,14 +73,13 @@ class DigitParser:
 
 def solve_2(input_=None):
     """
-    test=281
-    expect=53894
+    :challenge: 281
+    :expect: 53894
     """
     with open(locate(input_), "r") as fp:
         lines = read_lines(fp)
 
     digit_parser = DigitParser()
-    assert digit_parser.parse("ddgjgcrssevensix37twooneightgt") == 78
     return reduce(lambda a, b: a + digit_parser.parse(b), lines, 0)
 
 
