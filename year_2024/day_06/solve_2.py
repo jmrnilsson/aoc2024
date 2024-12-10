@@ -50,7 +50,7 @@ class WalkAutomaton:
             case 180: return y + 1, x + 0
             case 270: return y + 0, x + -1
 
-        raise TypeError("what's going one")
+        raise TypeError("What's going on here!")
 
     def _turn(self):
         new_dir = (90 + self.dir) % 360
@@ -68,14 +68,6 @@ class WalkAutomaton:
         else:
             self.pos = self._step()
             self.grid[self.pos] = 3
-
-    def get_middle_number_or_zero_if_unchanged(self):
-        if len(self.seen) < 2:
-            return 0
-
-        half = len(self.sequence) // 2
-        middle_number = self.sequence[half]
-        return middle_number
 
     def is_accepting(self) -> Accept:
         if self.outside:

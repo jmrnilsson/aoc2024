@@ -379,23 +379,21 @@ def solve(__input=None):
                 case _: antennas[cell].add((y, x))
 
     antinodes: DefaultDict[Set[Tuple[int, int]]] = defaultdict(set)
-    for antenna_name, coords in antennas.items():
+    for antenna, coords in antennas.items():
         for a, b in itertools.combinations(coords, 2):
-            y_real = a[0] - b[0]
-            x_real = a[1] - b[1]
-
+            y_displacement, x_displacement = a[0] - b[0], a[1] - b[1]
             left_most, right_most = sorted([a, b], key=lambda entry: entry[1])
 
-            if x_real < 0:
-                an = left_most[0] + y_real, left_most[1] + x_real
-                antinodes[antenna_name].add(an)
-                xan = right_most[0] - y_real, right_most[1] - x_real
-                antinodes[antenna_name].add(xan)
+            if x_displacement < 0:
+                antinode_0 = left_most[0] + y_displacement, left_most[1] + x_displacement
+                antinodes[antenna].add(antinode_0)
+                antinode_1 = right_most[0] - y_displacement, right_most[1] - x_displacement
+                antinodes[antenna].add(antinode_1)
             else:
-                an = right_most[0] + y_real, right_most[1] + x_real
-                antinodes[antenna_name].add(an)
-                xan = left_most[0] - y_real, left_most[1] - x_real
-                antinodes[antenna_name].add(xan)
+                antinode_2 = right_most[0] + y_displacement, right_most[1] + x_displacement
+                antinodes[antenna].add(antinode_2)
+                antinode_3 = left_most[0] - y_displacement, left_most[1] - x_displacement
+                antinodes[antenna].add(antinode_3)
 
     unique_antinodes = {
         (y, x)
@@ -422,8 +420,6 @@ from aoc.printer import print_, get_meta_from_fn
 sys.setrecursionlimit(3000)
 
 def concat(left: int, right: int):
-    # return left * 10 * (1 + math.floor(math.log10(right))) + right
-
     quotient = right
     while quotient := quotient // 10:
         left *= 10
@@ -573,7 +569,7 @@ class WalkAutomaton:
             case 180: return y + 1, x + 0
             case 270: return y + 0, x + -1
 
-        raise TypeError("what's going one")
+        raise TypeError("What's going on here!")
 
     def _turn(self):
         new_dir = (90 + self.dir) % 360
@@ -591,14 +587,6 @@ class WalkAutomaton:
         else:
             self.pos = self._step()
             self.grid[self.pos] = 3
-
-    def get_middle_number_or_zero_if_unchanged(self):
-        if len(self.seen) < 2:
-            return 0
-
-        half = len(self.sequence) // 2
-        middle_number = self.sequence[half]
-        return middle_number
 
     def is_accepting(self) -> Accept:
         if self.outside:
@@ -707,14 +695,6 @@ class WalkAutomaton:
             self.pos = self._step()
             self.grid[self.pos] = 3
 
-    def get_middle_number_or_zero_if_unchanged(self):
-        if len(self.seen) < 2:
-            return 0
-
-        half = len(self.sequence) // 2
-        middle_number = self.sequence[half]
-        return middle_number
-
     def is_accepting(self):
         return self.outside
 
@@ -738,10 +718,10 @@ def solve_1(__input=None):
             _grid.append(l)
 
     grid = np.matrix(_grid, dtype=np.int8)
-    pos = tuple(np.argwhere(grid == 2)[0])
-    grid[pos] = 3
+    starting_position = tuple(np.argwhere(grid == 2)[0])
+    grid[starting_position] = 3
 
-    walk = WalkAutomaton(pos, 0, grid)
+    walk = WalkAutomaton(starting_position, 0, grid)
     while 1:
         walk.walk()
         if walk.is_accepting():
@@ -756,6 +736,7 @@ def solve_1(__input=None):
 import sys
 from dataclasses import dataclass
 from typing import List, Tuple, Set
+from numpy.ma.extras import median
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import print_, get_meta_from_fn
 

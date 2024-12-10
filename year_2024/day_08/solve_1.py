@@ -39,23 +39,21 @@ def solve(__input=None):
                 case _: antennas[cell].add((y, x))
 
     antinodes: DefaultDict[Set[Tuple[int, int]]] = defaultdict(set)
-    for antenna_name, coords in antennas.items():
+    for antenna, coords in antennas.items():
         for a, b in itertools.combinations(coords, 2):
-            y_real = a[0] - b[0]
-            x_real = a[1] - b[1]
-
+            y_displacement, x_displacement = a[0] - b[0], a[1] - b[1]
             left_most, right_most = sorted([a, b], key=lambda entry: entry[1])
 
-            if x_real < 0:
-                an = left_most[0] + y_real, left_most[1] + x_real
-                antinodes[antenna_name].add(an)
-                xan = right_most[0] - y_real, right_most[1] - x_real
-                antinodes[antenna_name].add(xan)
+            if x_displacement < 0:
+                antinode_0 = left_most[0] + y_displacement, left_most[1] + x_displacement
+                antinodes[antenna].add(antinode_0)
+                antinode_1 = right_most[0] - y_displacement, right_most[1] - x_displacement
+                antinodes[antenna].add(antinode_1)
             else:
-                an = right_most[0] + y_real, right_most[1] + x_real
-                antinodes[antenna_name].add(an)
-                xan = left_most[0] - y_real, left_most[1] - x_real
-                antinodes[antenna_name].add(xan)
+                antinode_2 = right_most[0] + y_displacement, right_most[1] + x_displacement
+                antinodes[antenna].add(antinode_2)
+                antinode_3 = left_most[0] - y_displacement, left_most[1] - x_displacement
+                antinodes[antenna].add(antinode_3)
 
     unique_antinodes = {
         (y, x)

@@ -2,6 +2,8 @@ import sys
 from dataclasses import dataclass
 from typing import List, Tuple, Set
 
+from numpy.ma.extras import median
+
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import print_, get_meta_from_fn
 

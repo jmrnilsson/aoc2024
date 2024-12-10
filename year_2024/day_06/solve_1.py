@@ -62,14 +62,6 @@ class WalkAutomaton:
             self.pos = self._step()
             self.grid[self.pos] = 3
 
-    def get_middle_number_or_zero_if_unchanged(self):
-        if len(self.seen) < 2:
-            return 0
-
-        half = len(self.sequence) // 2
-        middle_number = self.sequence[half]
-        return middle_number
-
     def is_accepting(self):
         return self.outside
 
@@ -95,10 +87,10 @@ def solve_1(__input=None):
             _grid.append(l)
 
     grid = np.matrix(_grid, dtype=np.int8)
-    pos = tuple(np.argwhere(grid == 2)[0])
-    grid[pos] = 3
+    starting_position = tuple(np.argwhere(grid == 2)[0])
+    grid[starting_position] = 3
 
-    walk = WalkAutomaton(pos, 0, grid)
+    walk = WalkAutomaton(starting_position, 0, grid)
     while 1:
         walk.walk()
         if walk.is_accepting():

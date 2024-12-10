@@ -19,8 +19,6 @@ test_input_2 = build_location(__file__, "test_2.txt")
 
 
 def concat(left: int, right: int):
-    # return left * 10 * (1 + math.floor(math.log10(right))) + right
-
     quotient = right
     while quotient := quotient // 10:
         left *= 10
