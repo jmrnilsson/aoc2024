@@ -4,8 +4,6 @@ import sys
 from collections import defaultdict
 from typing import List, Tuple, Set, DefaultDict, Callable, Generator
 
-import numpy as np
-
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
 

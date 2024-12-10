@@ -1,5 +1,4 @@
 from functools import reduce
-from functools import reduce
 from typing import List, Tuple, Any
 
 import numpy as np

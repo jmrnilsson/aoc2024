@@ -1,5 +1,4 @@
 import operator
-import operator
 import re
 import sys
 from functools import reduce
@@ -7,7 +6,6 @@ from typing import List, Callable, Tuple
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import print_, get_meta_from_fn
-
 
 sys.setrecursionlimit(3000)
 

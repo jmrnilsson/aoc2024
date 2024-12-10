@@ -397,7 +397,6 @@ import operator
 import sys
 from collections import defaultdict
 from typing import List, Tuple, Set, DefaultDict, Callable, Generator
-import numpy as np
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
 
@@ -471,10 +470,8 @@ import itertools
 import sys
 from collections import defaultdict
 from typing import List, Tuple, Set, DefaultDict
-import numpy as np
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
-from year_2023.day_18.solve_1_c import pretty
 
 
 sys.setrecursionlimit(3000)
@@ -628,7 +625,6 @@ def solve(__input=None):
 ## year_2024\day_07\solve_2.py
 
 ```py
-import operator
 import operator
 import re
 import sys
@@ -1121,7 +1117,6 @@ def solve_1(__input=None):
 ## year_2024\day_04\solve.py
 
 ```py
-from functools import reduce
 from functools import reduce
 from typing import List, Tuple, Any
 import numpy as np

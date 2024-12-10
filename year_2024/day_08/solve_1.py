@@ -3,11 +3,8 @@ import sys
 from collections import defaultdict
 from typing import List, Tuple, Set, DefaultDict
 
-import numpy as np
-
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
-from year_2023.day_18.solve_1_c import pretty
 
 sys.setrecursionlimit(3000)
 

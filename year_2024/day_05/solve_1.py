@@ -4,11 +4,8 @@ from typing import List, Tuple
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
 
-# import numba
-
 
 sys.setrecursionlimit(3000)
-
 
 _default_puzzle_input = "year_2024/day_01/puzzle.txt"
 _default_test_input = "year_2024/day_01/test.txt"

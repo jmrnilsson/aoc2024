@@ -8,7 +8,6 @@ from aoc.printer import print_, get_meta_from_fn
 
 sys.setrecursionlimit(3000)
 
-
 _default_puzzle_input = "year_2024/day_01/puzzle.txt"
 _default_test_input = "year_2024/day_01/test.txt"
 
