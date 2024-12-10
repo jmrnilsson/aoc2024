@@ -76,8 +76,7 @@ def solve(__input=None):
     lines = []
     with open(locate(__input), "r") as fp:
         for line in read_lines(fp):
-            a = list(map(int, list(line)))
-            lines.append(a)
+            lines.append(list(map(int, list(line))))
 
     grid = np.matrix(lines)
     starting_positions = [[(int(y), int(x))] for y, x in np.argwhere(grid == 0)]
