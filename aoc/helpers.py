@@ -1,13 +1,12 @@
 import os
 import re
 from functools import wraps
+import shutil
 from time import perf_counter
 import logging
 
-import six
-
 import aoc
-from aoc.poll_printer import BColors
+from aoc.printer import ANSIColors as BColors
 
 _logger = logger = logging.getLogger(__name__)
 
@@ -43,6 +42,20 @@ def build_location_test(year, day, filename):
     aoc_path = os.path.dirname(os.path.normpath(__file__))
     work_path = os.path.normpath(os.path.join(aoc_path, f"year_{year}/day_{day_zfill}", filename))
     return work_path
+
+
+def copy_tree(src, dst):
+    """
+    Distutil copy_tree shim for Python 3.12
+    """
+    os.makedirs(dst, exist_ok=True)
+    for item in os.listdir(src):
+        src_item = os.path.join(src, item)
+        dst_item = os.path.join(dst, item)
+        if os.path.isdir(src_item):
+            shutil.copytree(src_item, dst_item, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src_item, dst_item)
 
 
 def loc_input(file_, name_ext):

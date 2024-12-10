@@ -1,8 +1,10 @@
 .venv
-.vscode
 venv
-//.opendb
+.opendb
 .idea
 node_modules
 __pycache__
 .pytest_cache
+sink
+.sink
+**.txt

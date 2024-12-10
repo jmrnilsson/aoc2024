@@ -1,6 +1,14 @@
-# 🎅 Advent of Code 2023 🎄
+# 🎄 Advent of Code 2024 😅
 
-- Install: `requirements install -r requirements.txt`
+## Install
+```bash
+python.exe -m venv .venv
+python.exe -m pip install --upgrade pip
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+## Usage
 - Run `python3 year_2023/day_07/solve.py`
 - Generate README: `python aoc/template.py`
 

@@ -1,10 +1,11 @@
 import codecs
-from distutils import dir_util
 import os
 import re
 from collections import OrderedDict
 from string import Template
 from pathlib import Path
+
+from aoc.helpers import copy_tree
 
 
 def _script_dir():
@@ -20,7 +21,7 @@ def mkdir_p(path: str):
 
 def copy_from_source():
     folders = []
-    for walker in os.walk("../../aoc/year_2023"):
+    for walker in os.walk("../../aoc/year_2024"):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):
                 folders.append(os.path.join(walker[0], folder))
@@ -34,12 +35,12 @@ def copy_from_source():
 
     print("")
     for source, target in source_targets:
-        dir_util.copy_tree(source, target)
+        copy_tree(source, target)
 
 
 def template_readme():
     folders = []
-    advent_folder = os.path.join(_script_dir(), "year_2023")
+    advent_folder = os.path.join(_script_dir(), "year_2024")
     for walker in os.walk(advent_folder):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):
@@ -51,7 +52,7 @@ def template_readme():
     for folder in folders:
         for files_walker in os.walk(folder):
             for file in files_walker[2]:
-                if re.search(r"solve\.[a-zA-z]{1,15}", file):
+                if re.search(r"solve(_\d+)?\.[a-zA-z]{1,15}", file):
                     advents_codes.append(os.path.abspath(os.path.join(files_walker[0], file)))
 
     advent_of_codes = OrderedDict()
@@ -70,6 +71,7 @@ def template_readme():
                     text += line
                 body.append(text)
             else:
+                last_line = None
                 for line in fp.readlines():
                     if line.startswith("from") or line.startswith("import"):
                         import_rows.append(line)
@@ -86,7 +88,11 @@ def template_readme():
                     if not body_started and re.search(r"^\w", line):
                         body_found = True
 
+                    if re.search(r"^\s*$", line) and re.search(r"^\s*$", last_line):
+                        continue
+
                     body.append(line)
+                    last_line = line
 
         text = ""
         for line in import_rows:

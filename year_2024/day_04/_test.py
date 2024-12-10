@@ -2,10 +2,11 @@ from typing import List
 
 import pytest
 
-from aoc.tests.test_fixtures import AdventFixture, make_fixture
-from year_2023.day_02 import solve as solution
+from aoc.tests.test_fixtures import make_fixture, AdventFixture
+from . import solve as solution
 
-class TestAdvent202302:
+
+class TestAdvent202405:
 
     @pytest.fixture
     def fixt(self) -> List[AdventFixture]:
