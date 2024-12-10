@@ -226,29 +226,28 @@ def reshape(blocks: List[Tuple[int, int, int]]) -> Generator[Tuple[int, int], No
         yield number_head, size_head
 
     if free_head < 1 < len(blocks):
-        for res in reshape(blocks[1:]):
-            yield res
+        for reshaped_blocks in reshape(blocks[1:]):
+            yield reshaped_blocks
 
     elif free_head and len(blocks) > 1:
         number_tail, size_tail, free_tail = blocks[-1]
 
         if size_tail == free_head:
             yield number_tail, size_tail
-            for res in reshape(blocks[1:-1]):
-                yield res
+            for reshaped_blocks in reshape(blocks[1:-1]):
+                yield reshaped_blocks
 
         if free_head > size_tail:
             yield number_tail, size_tail
             new_blocks = [(0, 0, free_head - size_tail)] + blocks[1:-1]
-            for res in reshape(new_blocks):
-                yield res
+            for reshaped_blocks in reshape(new_blocks):
+                yield reshaped_blocks
 
         if size_tail > free_head:
             yield number_tail, free_head
             new_blocks = blocks[1:-1] + [(number_tail, size_tail - free_head, free_tail)]
-
-            for res in reshape(new_blocks):
-                yield res
+            for reshaped_blocks in reshape(new_blocks):
+                yield reshaped_blocks
 
 def solve(__input=None):
     """
