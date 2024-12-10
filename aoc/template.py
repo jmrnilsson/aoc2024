@@ -51,6 +51,8 @@ def template_readme():
     folders.sort(key=lambda kk: kk)
     for folder in folders:
         for files_walker in os.walk(folder):
+            if "sink" in files_walker[0]:
+                continue
             for file in files_walker[2]:
                 if re.search(r"solve(_\d+)?\.[a-zA-z]{1,15}", file):
                     advents_codes.append(os.path.abspath(os.path.join(files_walker[0], file)))
