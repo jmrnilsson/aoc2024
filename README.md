@@ -12,6 +12,27 @@ pip install -r requirements.txt
 - Run `python3 year_2023/day_07/solve.py`
 - Generate README: `python aoc/template.py`
 
+## Focus for 2024
+
+- Explore Automatons preferably NFA but also a DFA.
+  - Focus transition of states and accepting states.
+  - Try to find something for push-down Automata.
+  - Stay close to the language used in the puzzles.
+- Attempt a CUDA brute at some point.
+- Try a pathfinding concept aside A*, Dijkstra, BFS and DFS. Perhaps Bidirectional Search, JPS, D-Lite**, Theta*,
+  Bellman-Ford or Floyd-Warshall.
+
+
+| Type | Algorithm                                         |
+|-------|---------------------------------------------------|
+|Grid-based games or simulations:| A*, JPS, Theta*                                   |
+|Dynamic environments:| D* or [D*-Lite](https://en.wikipedia.org/wiki/D*) |
+|Unweighted graphs:| BFS                                               |
+|Weighted graphs:| Dijkstra or A*                                    |
+|Negative weights:| [Bellman-Ford](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm)                                      |
+|Memory constraints:| [IDA*](https://en.wikipedia.org/wiki/Iterative_deepening_A*)                                          |
+|All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
+
 
 ## year_2024\day_11\solve_2.py
 
@@ -27,61 +48,67 @@ from aoc.printer import get_meta_from_fn, print_
 sys.setrecursionlimit(30_000)
 
 @functools.cache
-def quick_log_10(stone: int) -> int:
+def quick_split_if_even(stone: int) -> List[int]:
     log_10, quotient = 1, stone
     while quotient := quotient // 10:
         log_10 += 1
 
-    return log_10
+    if log_10 % 2 == 1:
+        return []
 
-@functools.cache
-def split(log_10: int, stone: int) -> Tuple[int, int]:
     quotient = 10 ** (log_10 // 2)
     top = stone // quotient
     top_floor = top * quotient
     bottom = stone - top_floor
-    return top, bottom
+    return [top, bottom]
 
-def observe_stones(_stones: List[int], exit_after: int):
-    stones: Counter = Counter()
-    iteration: int = 0
+class ObserverAutomaton:
+    stones: Counter
+    iteration: int
+    end_on: int
 
-    for stone in _stones:
-        stones.update({ stone: 1})
+    def __init__(self, stones: List[int], end_on: int):
+        self.stones = Counter({s: 1 for s in stones})
+        self.iteration = 0
+        self.end_on = end_on
 
-    while exit_after != iteration:
-        materialized = dict(stones)
-        stones.clear()
+    def blink(self):
+        materialized = dict(self.stones)
+        self.stones.clear()
         for stone, amount in materialized.items():
             if stone == 0:
-                stones.update({1: amount})
-                continue
+                self.stones.update({1: amount})
+            elif len((maybe_two := quick_split_if_even(stone))) > 1:
+                for new_stone in maybe_two:
+                    self.stones.update({new_stone: amount})
+            else:
+                self.stones.update({stone * 2024: amount})
 
-            if (log_10 := quick_log_10(stone)) % 2 == 0:
-                top, bottom = split(log_10, stone)
-                for v in (top, bottom):
-                    stones.update({v: amount})
-                continue
+        self.iteration += 1
 
-            stones.update({ stone * 2024: amount})
+    def is_accepting(self):
+        return self.end_on == self.iteration
 
-        iteration += 1
-
-    return sum(v for v in stones.values())
+    def sum_stones(self):
+        return sum(v for _, v in self.stones.items())
 
 def solve(_input=None):
     """
     :challenge: 55312
     :expect: 277444936413293
     """
-    stones = []
+    lines = []
     with open(locate(_input), "r") as fp:
         for line in read_lines(fp):
-            stones += [int(d) for d in line.split(" ")]
+            stones = [int(d) for d in line.split(" ")]
+            lines.append(stones)
 
     n: int = 25 if "test" in _input else 75
-    no_of_stones = observe_stones(stones, n)
-    return no_of_stones
+    observer = ObserverAutomaton(stones, n)  # 22
+    while not observer.is_accepting():
+        observer.blink()
+
+    return observer.sum_stones()
 
 ```
 ## year_2024\day_11\solve_1.py
@@ -89,60 +116,58 @@ def solve(_input=None):
 ```py
 import functools
 import sys
-from typing import List
+from collections import Counter
+from typing import List, Tuple
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, print_
 
 
 sys.setrecursionlimit(30_000)
 
-def int_split(number: int):
-    original_number = number
-    power_of = 0
-    quotient = number
-    while quotient := quotient // 10:
-        power_of += power_of
-
-    top = original_number // power_of // 2 * 10
-    bottom = original_number - top
-    return top, bottom
-
 @functools.cache
-def split(number: int):
-    strn = str(number)
-    if (size := len(strn)) % 2 == 0:
-        return int(strn[:size//2]), int(strn[size//2:])
-    return number,
+def quick_split_if_even(stone: int) -> List[int]:
+    log_10, quotient = 1, stone
+    while quotient := quotient // 10:
+        log_10 += 1
+
+    if log_10 % 2 == 1:
+        return []
+
+    quotient = 10 ** (log_10 // 2)
+    top = stone // quotient
+    top_floor = top * quotient
+    bottom = stone - top_floor
+    return [top, bottom]
 
 class ObserverAutomaton:
-    stones: List[int]
-    count: int
-    exit_count: int
+    stones: Counter
+    iteration: int
+    end_on: int
 
-    def __init__(self, stones: List[int], exit_count: int):
-        self.stones = list(stones)
-        self.count = 0
-        self.exit_count = exit_count
+    def __init__(self, stones: List[int], end_on: int):
+        self.stones = Counter({s: 1 for s in stones})
+        self.iteration = 0
+        self.end_on = end_on
 
     def blink(self):
-        for i in range(len(self.stones) - 1, -1, -1):
-            stone = self.stones[i]
+        materialized = dict(self.stones)
+        self.stones.clear()
+        for stone, amount in materialized.items():
             if stone == 0:
-                self.stones[i] = 1
-            elif len((maybe_two := split(stone))) > 1:
-                self.stones[i] = maybe_two[0]
-                self.stones.insert(i + 1, maybe_two[1])
+                self.stones.update({1: amount})
+            elif len((maybe_two := quick_split_if_even(stone))) > 1:
+                for new_stone in maybe_two:
+                    self.stones.update({new_stone: amount})
             else:
-                self.stones[i] = self.stones[i] * 2024
+                self.stones.update({stone * 2024: amount})
 
-        self.count += 1
+        self.iteration += 1
 
     def is_accepting(self):
+        return self.end_on == self.iteration
 
-        return self.exit_count == self.count
-
-    def number_of_stones(self):
-        return len(self.stones)
+    def sum_stones(self):
+        return sum(v for _, v in self.stones.items())
 
 def solve(__input=None):
     """
@@ -159,7 +184,7 @@ def solve(__input=None):
     while not observer.is_accepting():
         observer.blink()
 
-    return observer.number_of_stones()
+    return observer.sum_stones()
 
 ```
 ## year_2024\day_10\solve_2.py

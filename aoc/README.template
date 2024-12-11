@@ -12,4 +12,25 @@ pip install -r requirements.txt
 - Run `python3 year_2023/day_07/solve.py`
 - Generate README: `python aoc/template.py`
 
+## Focus for 2024
+
+- Explore Automatons preferably NFA but also a DFA.
+  - Focus transition of states and accepting states.
+  - Try to find something for push-down Automata.
+  - Stay close to the language used in the puzzles.
+- Attempt a CUDA brute at some point.
+- Try a pathfinding concept aside A*, Dijkstra, BFS and DFS. Perhaps Bidirectional Search, JPS, D-Lite**, Theta*,
+  Bellman-Ford or Floyd-Warshall.
+
+
+| Type | Algorithm                                         |
+|-------|---------------------------------------------------|
+|Grid-based games or simulations:| A*, JPS, Theta*                                   |
+|Dynamic environments:| D* or [D*-Lite](https://en.wikipedia.org/wiki/D*) |
+|Unweighted graphs:| BFS                                               |
+|Weighted graphs:| Dijkstra or A*                                    |
+|Negative weights:| [Bellman-Ford](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm)                                      |
+|Memory constraints:| [IDA*](https://en.wikipedia.org/wiki/Iterative_deepening_A*)                                          |
+|All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
+
 $code

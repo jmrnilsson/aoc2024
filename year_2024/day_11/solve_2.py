@@ -16,49 +16,52 @@ puzzle_input = build_location(__file__, "puzzle.txt")
 test_input = build_location(__file__, "test.txt")
 test_input_2 = build_location(__file__, "test_2.txt")
 
+
 @functools.cache
-def quick_log_10(stone: int) -> int:
+def quick_split_if_even(stone: int) -> List[int]:
     log_10, quotient = 1, stone
     while quotient := quotient // 10:
         log_10 += 1
 
-    return log_10
+    if log_10 % 2 == 1:
+        return []
 
-@functools.cache
-def split(log_10: int, stone: int) -> Tuple[int, int]:
     quotient = 10 ** (log_10 // 2)
     top = stone // quotient
     top_floor = top * quotient
     bottom = stone - top_floor
-    return top, bottom
+    return [top, bottom]
 
 
-def observe_stones(_stones: List[int], exit_after: int):
-    stones: Counter = Counter()
-    iteration: int = 0
+class ObserverAutomaton:
+    stones: Counter
+    iteration: int
+    end_on: int
 
-    for stone in _stones:
-        stones.update({ stone: 1})
+    def __init__(self, stones: List[int], end_on: int):
+        self.stones = Counter({s: 1 for s in stones})
+        self.iteration = 0
+        self.end_on = end_on
 
-    while exit_after != iteration:
-        materialized = dict(stones)
-        stones.clear()
+    def blink(self):
+        materialized = dict(self.stones)
+        self.stones.clear()
         for stone, amount in materialized.items():
             if stone == 0:
-                stones.update({1: amount})
-                continue
+                self.stones.update({1: amount})
+            elif len((maybe_two := quick_split_if_even(stone))) > 1:
+                for new_stone in maybe_two:
+                    self.stones.update({new_stone: amount})
+            else:
+                self.stones.update({stone * 2024: amount})
 
-            if (log_10 := quick_log_10(stone)) % 2 == 0:
-                top, bottom = split(log_10, stone)
-                for v in (top, bottom):
-                    stones.update({v: amount})
-                continue
+        self.iteration += 1
 
-            stones.update({ stone * 2024: amount})
+    def is_accepting(self):
+        return self.end_on == self.iteration
 
-        iteration += 1
-
-    return sum(v for v in stones.values())
+    def sum_stones(self):
+        return sum(v for _, v in self.stones.items())
 
 
 def solve(_input=None):
@@ -66,15 +69,18 @@ def solve(_input=None):
     :challenge: 55312
     :expect: 277444936413293
     """
-    stones = []
+    lines = []
     with open(locate(_input), "r") as fp:
         for line in read_lines(fp):
-            stones += [int(d) for d in line.split(" ")]
+            stones = [int(d) for d in line.split(" ")]
+            lines.append(stones)
 
     n: int = 25 if "test" in _input else 75
-    no_of_stones = observe_stones(stones, n)
-    return no_of_stones
+    observer = ObserverAutomaton(stones, n)  # 22
+    while not observer.is_accepting():
+        observer.blink()
 
+    return observer.sum_stones()
 
 
 if __name__ == "__main__":
