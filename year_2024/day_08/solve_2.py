@@ -28,7 +28,6 @@ def find_antinode(shape: Tuple[int, int], edge, y_real: int, x_real, op: Callabl
         if not -1 < antinode[1] < width:
             break
         yield antinode
-        # antinodes[antenna_name].add(an)
 
 def solve(__input=None):
     """

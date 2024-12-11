@@ -27,7 +27,7 @@ class HikingAutomaton:
         self.done = []
         self.grid = grid
 
-    def in_bound(self, y: int, x: int) -> bool:
+    def in_bounds(self, y: int, x: int) -> bool:
         return -1 < y < self.grid.shape[0] and -1 < x < self.grid.shape[1]
 
     def _step(self, y, x) -> Generator[Tuple[int, int, int], None, None]:
@@ -38,7 +38,8 @@ class HikingAutomaton:
             (y + 0, x + -1)
         )
         for step in steps:
-            if self.in_bound(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
+            # In bounds of map and one elevation above
+            if self.in_bounds(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
                 yield *step, value
 
     def walk(self):

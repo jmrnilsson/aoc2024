@@ -13,6 +13,155 @@ pip install -r requirements.txt
 - Generate README: `python aoc/template.py`
 
 
+## year_2024\day_11\solve_2.py
+
+```py
+import functools
+import sys
+from collections import Counter
+from typing import List, Tuple
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, print_
+
+
+sys.setrecursionlimit(30_000)
+
+@functools.cache
+def quick_log_10(stone: int) -> int:
+    log_10, quotient = 1, stone
+    while quotient := quotient // 10:
+        log_10 += 1
+
+    return log_10
+
+@functools.cache
+def split(log_10: int, stone: int) -> Tuple[int, int]:
+    quotient = 10 ** (log_10 // 2)
+    top = stone // quotient
+    top_floor = top * quotient
+    bottom = stone - top_floor
+    return top, bottom
+
+def observe_stones(_stones: List[int], exit_after: int):
+    stones: Counter = Counter()
+    iteration: int = 0
+
+    for stone in _stones:
+        stones.update({ stone: 1})
+
+    while exit_after != iteration:
+        materialized = dict(stones)
+        stones.clear()
+        for stone, amount in materialized.items():
+            if stone == 0:
+                stones.update({1: amount})
+                continue
+
+            if (log_10 := quick_log_10(stone)) % 2 == 0:
+                top, bottom = split(log_10, stone)
+                for v in (top, bottom):
+                    stones.update({v: amount})
+                continue
+
+            stones.update({ stone * 2024: amount})
+
+        iteration += 1
+
+    return sum(v for v in stones.values())
+
+def solve(_input=None):
+    """
+    :challenge: 55312
+    :expect: 277444936413293
+    """
+    stones = []
+    with open(locate(_input), "r") as fp:
+        for line in read_lines(fp):
+            stones += [int(d) for d in line.split(" ")]
+
+    n: int = 25 if "test" in _input else 75
+    no_of_stones = observe_stones(stones, n)
+    return no_of_stones
+
+```
+## year_2024\day_11\solve_1.py
+
+```py
+import functools
+import sys
+from typing import List
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, print_
+
+
+sys.setrecursionlimit(30_000)
+
+def int_split(number: int):
+    original_number = number
+    power_of = 0
+    quotient = number
+    while quotient := quotient // 10:
+        power_of += power_of
+
+    top = original_number // power_of // 2 * 10
+    bottom = original_number - top
+    return top, bottom
+
+@functools.cache
+def split(number: int):
+    strn = str(number)
+    if (size := len(strn)) % 2 == 0:
+        return int(strn[:size//2]), int(strn[size//2:])
+    return number,
+
+class ObserverAutomaton:
+    stones: List[int]
+    count: int
+    exit_count: int
+
+    def __init__(self, stones: List[int], exit_count: int):
+        self.stones = list(stones)
+        self.count = 0
+        self.exit_count = exit_count
+
+    def blink(self):
+        for i in range(len(self.stones) - 1, -1, -1):
+            stone = self.stones[i]
+            if stone == 0:
+                self.stones[i] = 1
+            elif len((maybe_two := split(stone))) > 1:
+                self.stones[i] = maybe_two[0]
+                self.stones.insert(i + 1, maybe_two[1])
+            else:
+                self.stones[i] = self.stones[i] * 2024
+
+        self.count += 1
+
+    def is_accepting(self):
+
+        return self.exit_count == self.count
+
+    def number_of_stones(self):
+        return len(self.stones)
+
+def solve(__input=None):
+    """
+    :challenge: 55312
+    :expect: 233875
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            stones = [int(d) for d in line.split(" ")]
+            lines.append(stones)
+
+    observer = ObserverAutomaton(stones, 25)  # 22
+    while not observer.is_accepting():
+        observer.blink()
+
+    return observer.number_of_stones()
+
+```
 ## year_2024\day_10\solve_2.py
 
 ```py
@@ -67,7 +216,7 @@ class HikingAutomaton:
         self.done = []
         self.grid = grid
 
-    def in_bound(self, y: int, x: int) -> bool:
+    def in_bounds(self, y: int, x: int) -> bool:
         return -1 < y < self.grid.shape[0] and -1 < x < self.grid.shape[1]
 
     def _step(self, y, x) -> Generator[Tuple[int, int, int], None, None]:
@@ -78,7 +227,8 @@ class HikingAutomaton:
             (y + 0, x + -1)
         )
         for step in steps:
-            if self.in_bound(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
+            # In bounds of map and one elevation above
+            if self.in_bounds(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
                 yield *step, value
 
     def walk(self):
@@ -291,7 +441,6 @@ def find_antinode(shape: Tuple[int, int], edge, y_real: int, x_real, op: Callabl
         if not -1 < antinode[1] < width:
             break
         yield antinode
-        # antinodes[antenna_name].add(an)
 
 def solve(__input=None):
     """
@@ -695,13 +844,11 @@ class WalkAutomaton:
     def is_accepting(self):
         return self.outside
 
-def to(v: str):
-    if v == "#":
-        return 1
-    elif v == "^":
-        return 2
-    else:
-        return 0
+def to_int(text: str):
+    match text:
+        case "#": return 1
+        case "^": return 2
+        case _: return 0
 
 def solve_1(__input=None):
     """
@@ -711,8 +858,7 @@ def solve_1(__input=None):
     _grid: List[List[int]] = []
     with open(locate(__input), "r") as fp:
         for ind, line in enumerate(read_lines(fp)):
-            l = [to(l) for l in list(line)]
-            _grid.append(l)
+            _grid.append([to_int(l) for l in list(line)])
 
     grid = np.matrix(_grid, dtype=np.int8)
     starting_position = tuple(np.argwhere(grid == 2)[0])
@@ -1015,13 +1161,13 @@ class MultiplierAutomaton:
         self.multiply = start_state
         self.total = 0
 
-    def process(self, cmd: re.Match[str]):
-        if cmd[0].startswith("do()"):
+    def process(self, commands: re.Match[str]):
+        if commands[0] == "do()":
             self.multiply = True
-        elif cmd[0].startswith("don't()"):
+        elif commands[0] == "don't()":
             self.multiply = False
         elif self.multiply:
-            self.total += int(cmd[1]) * int(cmd[2])
+            self.total += int(commands[1]) * int(commands[2])
 
 def solve_2(input_=None):
     """

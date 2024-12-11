@@ -66,13 +66,11 @@ class WalkAutomaton:
         return self.outside
 
 
-def to(v: str):
-    if v == "#":
-        return 1
-    elif v == "^":
-        return 2
-    else:
-        return 0
+def to_int(text: str):
+    match text:
+        case "#": return 1
+        case "^": return 2
+        case _: return 0
 
 
 def solve_1(__input=None):
@@ -83,8 +81,7 @@ def solve_1(__input=None):
     _grid: List[List[int]] = []
     with open(locate(__input), "r") as fp:
         for ind, line in enumerate(read_lines(fp)):
-            l = [to(l) for l in list(line)]
-            _grid.append(l)
+            _grid.append([to_int(l) for l in list(line)])
 
     grid = np.matrix(_grid, dtype=np.int8)
     starting_position = tuple(np.argwhere(grid == 2)[0])

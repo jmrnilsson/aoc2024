@@ -33,13 +33,13 @@ class MultiplierAutomaton:
         self.multiply = start_state
         self.total = 0
 
-    def process(self, cmd: re.Match[str]):
-        if cmd[0].startswith("do()"):
+    def process(self, commands: re.Match[str]):
+        if commands[0] == "do()":
             self.multiply = True
-        elif cmd[0].startswith("don't()"):
+        elif commands[0] == "don't()":
             self.multiply = False
         elif self.multiply:
-            self.total += int(cmd[1]) * int(cmd[2])
+            self.total += int(commands[1]) * int(commands[2])
 
 def solve_2(input_=None):
     """
@@ -61,4 +61,4 @@ if __name__ == "__main__":
 
     challenge = get_meta_from_fn(solve_2, "challenge")
     expect = get_meta_from_fn(solve_2, "expect")
-    print_(solve_2, test_input, puzzle_input, challenge, expect)
+    print_(solve_2, test_input_2, puzzle_input, challenge, expect)
