@@ -34,6 +34,441 @@ pip install -r requirements.txt
 |All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2024\day_13\solve_2.py
+
+```py
+import math
+import re
+import sys
+from math import gcd
+import more_itertools
+from sympy import symbols, Eq
+from sympy.solvers import solve
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, ANSIColors, print2
+
+
+sys.setrecursionlimit(30_000)
+
+def _solve(_input=None):
+    """
+    :challenge: 0
+    :expect: 76358113886726
+    """
+    lines = []
+    with open(locate(_input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(line)
+
+    machines = list()
+    for machine in more_itertools.chunked(lines, 3):
+        assert "Button A" in machine[0]
+        assert "Button B" in machine[1]
+        assert "Prize" in machine[2]
+        a = list(map(int, re.findall(r"\d+", machine[0])))
+        b = list(map(int, re.findall(r"\d+", machine[1])))
+        _prize = list(map(int, re.findall(r"\d+", machine[2])))
+        prize = [d + 10000000000000 for d in _prize]
+        machines.append((a, b, prize))
+
+    optimized_machines = []
+    for machine in machines:
+        prize_x, prize_y = machine[2]
+        a_x, a_y = machine[0]
+        b_x, b_y = machine[1]
+        gcd_m = gcd(prize_y, a_y, b_y, prize_x, a_x, b_x)
+        optimized_machines.append((
+            [a_x // gcd_m, a_y // gcd_m],
+            [b_x // gcd_m, b_y // gcd_m],
+            [prize_x // gcd_m, prize_y // gcd_m]
+        ))
+        assert not any((a_x % gcd_m, a_y % gcd_m, b_x % gcd_m, b_y % gcd_m, prize_x % gcd_m, prize_y % gcd_m))
+
+    total = 0
+    for n, opt_machine in enumerate(optimized_machines):
+        _ax, _ay = opt_machine[0]
+        _bx, _by = opt_machine[1]
+        _px, _py = opt_machine[2]
+        a, b, ax, bx, ay, by, px, py = symbols("a b ax bx ay by px py")
+
+        eq0 = Eq(a * ax + b * bx, _px)
+        eq1 = Eq(a * ay + b * by, _py)
+        eq2 = eq0.subs({ax: _ax, bx: _bx})
+        eq3 = eq1.subs({ay: _ay, by: _by})
+        solve0 = solve([eq2, eq3], (a, b))
+        a_is_int = math.floor(solve0[a]) == solve0[a]
+        b_is_int = math.floor(solve0[b]) == solve0[b]
+        if a_is_int and b_is_int:
+            total += solve0[a] * 3 + solve0[b]
+
+    return total
+
+```
+## year_2024\day_13\solve_1.py
+
+```py
+import math
+import re
+import sys
+from math import gcd
+import more_itertools
+from sympy import symbols, Eq
+from sympy.solvers import solve
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, ANSIColors, print2
+
+
+sys.setrecursionlimit(30_000)
+
+def _solve(__input=None):
+    """
+    :challenge: 480
+    :expect: 36758
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(line)
+
+    machines = list()
+    for machine in more_itertools.chunked(lines, 3):
+        # try:
+        assert "Button A" in machine[0]
+        assert "Button B" in machine[1]
+        assert "Prize" in machine[2]
+        a = list(map(int, re.findall(r"\d+", machine[0])))
+        b = list(map(int, re.findall(r"\d+", machine[1])))
+        prize = list(map(int, re.findall(r"\d+", machine[2])))
+        machines.append((a, b, prize))
+        # except Exception as error:
+        #    x = str(error)
+        #    ba = ""
+
+    optimized_machines = []
+    for machine in machines:
+        prize_x, prize_y = machine[2]
+        a_x, a_y = machine[0]
+        b_x, b_y = machine[1]
+        gcd_m = gcd(prize_y, a_y, b_y, prize_x, a_x, b_x)
+        optimized_machines.append((
+            [a_x // gcd_m, a_y // gcd_m],
+            [b_x // gcd_m, b_y // gcd_m],
+            [prize_x // gcd_m, prize_y // gcd_m]
+        ))
+        assert not any((a_x % gcd_m, a_y % gcd_m, b_x % gcd_m, b_y % gcd_m, prize_x % gcd_m, prize_y % gcd_m))
+
+    total = 0
+    for n, opt_machine in enumerate(optimized_machines):
+        _ax, _ay = opt_machine[0]
+        _bx, _by = opt_machine[1]
+        _px, _py = opt_machine[2]
+        a, b, ax, bx, ay, by, px, py = symbols("a b ax bx ay by px py")
+
+        eq0 = Eq(a * ax + b * bx, _px)
+        eq1 = Eq(a * ay + b * by, _py)
+        eq2 = eq0.subs({ax: _ax, bx: _bx})
+        eq3 = eq1.subs({ay: _ay, by: _by})
+        solve0 = solve([eq2, eq3], (a, b))
+        a_is_int = math.floor(solve0[a]) == solve0[a]
+        b_is_int = math.floor(solve0[b]) == solve0[b]
+        if a_is_int and b_is_int:
+            total += solve0[a] * 3 + solve0[b]
+
+    return total
+
+```
+## year_2024\day_12\solve_2.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from enum import Enum
+from functools import reduce
+from itertools import combinations
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from numpy._core._multiarray_umath import StringDType
+from numpy.random import permutation
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose, group_by
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+class FloodFillAutomaton:
+    visited: Set[Tuple[int, int]]
+    counter: Counter
+
+    def __init__(self, grid):
+        self.visited = set()
+        self.grid = grid
+        self.new_grid = grid = np.full(grid.shape, dtype=StringDType, fill_value=".")
+        self.counter = Counter()
+
+    def flood(self, pos: Tuple[int, int]):
+        cell = self.grid[pos]
+        n = self.counter.get(self.grid[pos], 0)
+        name = f"{cell}{n}"
+        queue = {pos}
+        added = False
+        while queue:
+            current = queue.pop()
+
+            if current in self.visited:
+                continue
+
+            value = None
+            neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            for dy, dx in neighbors:
+                y = current[0] - dy
+                x = current[1] - dx
+                if (y, x) not in self.visited:
+                    if self.grid[(y, x)] == ".":
+                        continue
+
+                    if self.grid[(y, x)] == self.grid[pos]:
+                        queue.add((y, x))
+
+            n = self.counter.get(self.grid[current], 0)
+            s = f"{self.grid[current]}{n}"
+            added = True
+            self.new_grid[current] = value or s
+            self.visited.add(current)
+
+        if added:
+            self.counter.update({cell: 1})
+
+    def get_grid(self):
+        return self.new_grid
+
+def _solve(__input=None):
+    """
+    :challenge: 80
+    :expect: 881182
+    """
+    _lines = []
+    with open(locate(__input), "r") as fp:
+        for __line in read_lines(fp):
+            _lines.append(list(__line))
+
+    height = len(_lines) + 2
+    width = len(_lines[0]) + 2
+    shape = height, width
+    _grid = np.full(shape, fill_value='.', dtype=str)
+
+    # print(grid)
+
+    for y in range(len(_lines)):
+        for x in range(len(_lines[0])):
+            _grid[y + 1, x + 1] = _lines[y][x]
+
+    fill = FloodFillAutomaton(_grid)
+    positions = ((int(y), int(x)) for y, x in np.argwhere(_grid != "."))
+    for pos in positions:
+        fill.flood(pos)
+
+    grid = fill.get_grid()
+
+    faces = defaultdict(set)
+    for y1, y2 in sliding_window(range(shape[0]), 2):
+        for x in range(shape[1]):
+            if len((faces_ := {grid[y1, x], grid[y2, x]})) > 1:
+                for face in filter(lambda f: f != ".", faces_):
+                    association = 'up' if grid[y1, x] == face else 'down'
+                    faces[face].add((y1, y2, x, 'y', association))
+
+    for x1, x2 in sliding_window(range(shape[0]), 2):
+        for y in range(shape[0]):
+            if len((faces_ := {grid[y, x1], grid[y, x2]})) > 1:
+                for face in filter(lambda f: f != ".", faces_):
+                    association = 'left' if grid[y, x1] == face else 'right'
+                    faces[face].add((x1, x2, y, 'x', association))
+
+    for name, faces_ in faces.items():
+        mat = list(filter(lambda r: r[3] == "y", faces_))
+        iterable = sorted(mat, key=lambda t: (t[0], t[1], t[2]))
+        sw = list(more_itertools.sliding_window(iterable, 2))
+        for a, b in sw:
+            # if (a[0], a[1]) == (b[0], b[1]) and abs(a[2] - b[2]) < 2 and (grid[a[0], a[2]], grid[a[1], a[2]]) == (grid[b[0], b[2]], grid[b[1], b[2]]):
+            one = a[-1]
+            two = b[-1]
+            if (a[0], a[1]) == (b[0], b[1]) and abs(a[2] - b[2]) < 2 and one == two:
+                faces[name].remove(a)
+
+    for name, faces_ in faces.items():
+        mat = list(filter(lambda r: r[3] == "x", faces_))
+        iterable = sorted(mat, key=lambda t: (t[0], t[1], t[2]))
+        sw = list(more_itertools.sliding_window(iterable, 2))
+        for a, b in sw:
+            # if (a[0], a[1]) == (b[0], b[1]) and abs(a[2] - b[2]) < 2 and (grid[a[0], a[2]], grid[a[1], a[2]]) == (grid[b[0], b[2]], grid[b[1], b[2]]):
+            if (a[0], a[1]) == (b[0], b[1]) and abs(a[2] - b[2]) < 2 and a[-1] == b[-1]:
+                faces[name].remove(a)
+
+    unique, counts = np.unique(grid, return_counts=True)
+    areas = dict(zip(unique, counts))
+
+    total = 0
+    for k in sorted(unique):
+        if k == '.':
+            continue
+        area = areas[k]
+        perimeter = len(faces[k])
+        k_local = perimeter * area
+        # print(f"{k} = {k_local}")
+        total += k_local
+
+    return total
+
+```
+## year_2024\day_12\solve_1.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from enum import Enum
+from functools import reduce
+from itertools import combinations
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from numpy._core._multiarray_umath import StringDType
+from numpy.random import permutation
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+class FloodFillAutomaton:
+    visited: Set[Tuple[int, int]]
+    counter: Counter
+
+    def __init__(self, grid):
+        self.visited = set()
+        self.grid = grid
+        self.new_grid = grid = np.full(grid.shape, dtype=StringDType, fill_value=".")
+        self.counter = Counter()
+
+    def flood(self, pos: Tuple[int, int]):
+        cell = self.grid[pos]
+        n = self.counter.get(self.grid[pos], 0)
+        name = f"{cell}{n}"
+        queue = {pos}
+        added = False
+        while queue:
+            current = queue.pop()
+
+            if current in self.visited:
+                continue
+
+            value = None
+            neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            for dy, dx in neighbors:
+                y = current[0] - dy
+                x = current[1] - dx
+                if (y, x) not in self.visited:
+                    if self.grid[(y, x)] == ".":
+                        continue
+
+                    if self.grid[(y, x)] == self.grid[pos]:
+                        queue.add((y, x))
+
+            n = self.counter.get(self.grid[current], 0)
+            s = f"{self.grid[current]}{n}"
+            added = True
+            self.new_grid[current] = value or s
+            self.visited.add(current)
+
+        if added:
+            self.counter.update({cell: 1})
+
+    def get_grid(self):
+        return self.new_grid
+
+def solve(__input=None):
+    """
+    :challenge: 140
+    :expect: 1467094
+    """
+    _lines = []
+    with open(locate(__input), "r") as fp:
+        for __line in read_lines(fp):
+            _lines.append(list(__line))
+
+    ylen = len(_lines) + 2
+    xlen = len(_lines[0]) + 2
+    shape = ylen, xlen
+    _grid = np.full(shape, fill_value='.', dtype=str)
+
+    # print(grid)
+
+    for y in range(len(_lines)):
+        for x in range(len(_lines[0])):
+            _grid[y + 1, x + 1] = _lines[y][x]
+
+    fill = FloodFillAutomaton(_grid)
+    positions = ((int(y), int(x)) for y, x in np.argwhere(_grid != "."))
+    for pos in positions:
+        fill.flood(pos)
+
+    grid = fill.get_grid()
+
+    faces = defaultdict(set)
+    for y1, y2 in sliding_window(range(shape[0]), 2):
+        for x in range(shape[1]):
+            if len((faces_ := {grid[y1, x], grid[y2, x]})) > 1:
+                for face in filter(lambda f: f != ".", faces_):
+                    faces[face].add((y1, y2, x, 'y'))
+
+    for x1, x2 in sliding_window(range(shape[1]), 2):
+        for y in range(shape[0]):
+            if len((faces_ := {grid[y, x1], grid[y, x2]})) > 1:
+                for face in filter(lambda f: f != ".", faces_):
+                    faces[face].add((x1, x2, y, 'x'))
+
+    unique, counts = np.unique(grid, return_counts=True)
+    areas = dict(zip(unique, counts))
+
+    total = 0
+    for k in sorted(unique):
+        if k == '.':
+            continue
+        area = areas[k]
+        perimeter = len(faces[k])
+        k_local = perimeter * area
+        # print(f"{k} = {k_local}")
+        total += k_local
+
+    return total
+
+```
 ## year_2024\day_11\solve_2.py
 
 ```py
