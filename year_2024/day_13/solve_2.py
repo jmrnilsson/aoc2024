@@ -28,33 +28,18 @@ def _solve(_input=None):
         for line in read_lines(fp):
             lines.append(line)
 
-    machines = list()
-    for machine in more_itertools.chunked(lines, 3):
-        assert "Button A" in machine[0]
-        assert "Button B" in machine[1]
-        assert "Prize" in machine[2]
-        a = list(map(int, re.findall(r"\d+", machine[0])))
-        b = list(map(int, re.findall(r"\d+", machine[1])))
-        _prize = list(map(int, re.findall(r"\d+", machine[2])))
-        prize = [d + 10000000000000 for d in _prize]
+    machines = []
+    for button_a, button_b, prize_ in more_itertools.chunked(lines, 3):
+        assert "Button A" in button_a
+        assert "Button B" in button_b
+        assert "Prize" in prize_
+        a = map(int, re.findall(r"\d+", button_a))
+        b = map(int, re.findall(r"\d+", button_b))
+        prize = map(int, re.findall(r"\d+", prize_))
         machines.append((a, b, prize))
 
-    optimized_machines = []
-    for machine in machines:
-        prize_x, prize_y = machine[2]
-        a_x, a_y = machine[0]
-        b_x, b_y = machine[1]
-        gcd_m = gcd(prize_y, a_y, b_y, prize_x, a_x, b_x)
-        optimized_machines.append((
-            [a_x // gcd_m, a_y // gcd_m],
-            [b_x // gcd_m, b_y // gcd_m],
-            [prize_x // gcd_m, prize_y // gcd_m]
-        ))
-        assert not any((a_x % gcd_m, a_y % gcd_m, b_x % gcd_m, b_y % gcd_m, prize_x % gcd_m, prize_y % gcd_m))
-
-
     total = 0
-    for n, opt_machine in enumerate(optimized_machines):
+    for n, opt_machine in enumerate(machines):
         _ax, _ay = opt_machine[0]
         _bx, _by = opt_machine[1]
         _px, _py = opt_machine[2]
@@ -74,24 +59,5 @@ def _solve(_input=None):
 
 
 if __name__ == "__main__":
-    challenge = get_meta_from_fn(_solve, "challenge")
-    challenge_2 = 772
-    challenge_3 = 1930
-    challenge_4 = (
-        2 * 6 +  # C
-        1 * 4 +  # D
-        1 * 4 +  # B
-        1 * 4 +  # Y
-        7 * 15   # A
-    )
-    challenge_5 = (
-        2 * 6 +  # C
-        1 * 4 +  # D
-        2 * 6 +  # B
-        1 * 4 +  # Y
-        1 * 4 +  # A1
-        4 * 12   # A2
-    )
-
     expect = get_meta_from_fn(_solve, "expect")
     print2(_solve, puzzle_input, expect, ANSIColors.OK_GREEN)
