@@ -24,6 +24,9 @@ test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
 
+def is_integer(value) -> bool:
+    return math.floor(value) == value
+
 def _solve(__input=None):
     """
     :challenge: 480
@@ -56,9 +59,7 @@ def _solve(__input=None):
         eq2 = eq0.subs({ax: _ax, bx: _bx})
         eq3 = eq1.subs({ay: _ay, by: _by})
         solve0 = solve([eq2, eq3], (a, b))
-        a_is_int = math.floor(solve0[a]) == solve0[a]
-        b_is_int = math.floor(solve0[b]) == solve0[b]
-        if a_is_int and b_is_int:
+        if is_integer(solve0[a]) and is_integer(solve0[b]):
             total += solve0[a] * 3 + solve0[b]
 
     return total

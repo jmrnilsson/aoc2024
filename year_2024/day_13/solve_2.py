@@ -9,6 +9,7 @@ from sympy.solvers import solve
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, ANSIColors, print2
+from year_2024.day_13.solve_1 import is_integer
 
 sys.setrecursionlimit(30_000)
 
@@ -50,9 +51,7 @@ def _solve(_input=None):
         eq2 = eq0.subs({ax: _ax, bx: _bx})
         eq3 = eq1.subs({ay: _ay, by: _by})
         solve0 = solve([eq2, eq3], (a, b))
-        a_is_int = math.floor(solve0[a]) == solve0[a]
-        b_is_int = math.floor(solve0[b]) == solve0[b]
-        if a_is_int and b_is_int:
+        if is_integer(solve0[a]) and is_integer(solve0[b]):
             total += solve0[a] * 3 + solve0[b]
 
     return total
