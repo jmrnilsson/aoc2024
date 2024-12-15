@@ -1,48 +1,13 @@
 import itertools
-import operator
 import re
-import statistics
 import sys
-from collections import Counter, OrderedDict, defaultdict
-from copy import copy, deepcopy
-from dataclasses import dataclass
-from functools import reduce
-from itertools import accumulate, cycle
-from time import sleep
-from turtledemo.sorting_animate import instructions1
-from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any, Iterable
-import os
-import more_itertools
-# import numba
+from typing import Dict, List, Tuple
+
 import numpy as np
-import six
-from defaultlist import defaultlist
-from more_itertools import windowed, chunked
-from more_itertools.recipes import sliding_window
 
 from aoc.helpers import locate, build_location, read_lines
-from aoc.poll_printer import PollPrinter
-from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
-from aoc.tests.test_fixtures import get_challenges_from_meta
-from aoc.tools import transpose, pretty
-from year_2021.day_05 import direction
+from aoc.printer import get_meta_from_fn, ANSIColors, print2
 
-# from numba import cuda, np as npc, vectorize
-
-# requires https://developer.nvidia.com/cuda-downloads CUDA toolkit. There are some sketchy versions in pip, but it's
-# almost impossible to find the right versions.
-# - pip install nvidia-pyindex
-# - pip install nvidia-cuda-runtime-cuXX
-# python -m numba -s
-# print(numba.__version__)
-# print(cuda.gpus)
-# print(cuda.detect())
-
-# if cuda.is_available():
-#     print("CUDA is available!")
-#     print("Device:", cuda.get_current_device().name)
-# else:
-#     print("CUDA is not available.")
 
 sys.setrecursionlimit(30_000)
 
@@ -53,7 +18,6 @@ puzzle_input = build_location(__file__, "puzzle.txt")
 test_input = build_location(__file__, "test.txt")
 test_input_2 = build_location(__file__, "test_2.txt")
 test_input_3 = build_location(__file__, "test_3.txt")
-
 
 class StorageRobotAutomaton:
     lookup: Dict[str, Tuple[int, int]]

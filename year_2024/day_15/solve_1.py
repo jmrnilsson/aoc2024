@@ -1,12 +1,10 @@
 import re
 import sys
-from typing import List, Tuple, Set
 
 import numpy as np
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.printer import get_meta_from_fn, ANSIColors, print2
-from aoc.tools import pretty
 
 
 sys.setrecursionlimit(30_000)
