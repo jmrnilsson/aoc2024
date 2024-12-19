@@ -54,7 +54,7 @@ def template_readme():
             if "sink" in files_walker[0]:
                 continue
             for file in files_walker[2]:
-                if re.search(r"(?<![_])solve(_\d+)?\.[a-zA-z]{1,15}", file):
+                if not re.search(r"^_", file) and re.search(r"solve(_\d+)?\.[a-zA-z]{1,15}", file):
                     advents_codes.append(os.path.abspath(os.path.join(files_walker[0], file)))
 
     advent_of_codes = OrderedDict()
