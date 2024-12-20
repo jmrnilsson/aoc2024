@@ -34,6 +34,551 @@ pip install -r requirements.txt
 |All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2024\day_19\solve_2.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from automata.fa.nfa import NFA
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+def tuple_sorted(iterable: Set | List | Tuple) -> Tuple:
+    return tuple(sorted(iterable))
+
+class TowelNFA:
+
+    def __init__(self, towels):
+        assert len(towels) == len(set(towels))
+        self.towels = towels
+        self.total = 0
+
+    def accepts(self, word):
+        i = 0
+        total = 0
+        current_state = Counter()
+        current_state.update({word: 1})
+        while 1:
+            i += 1
+            canonical_state = dict(current_state)
+            current_state.clear()
+
+            for state, count in canonical_state.items():
+                matches = Counter()
+
+                if state == "":
+                    total += count
+                    continue
+
+                for towel in self.towels:
+                    if state.startswith(towel):
+                        new_state = state[len(towel):]
+                        matches.update({(state, new_state): count})
+
+                # Reduce "from state" with count.
+                for k, q in matches.items():
+                    current_state.update({k[1]: q})
+
+            if set(canonical_state.keys()) == set(current_state.keys()):
+                break
+
+        # print(f"word: {word} len: {total}")
+        self.total += total
+
+        return self.total
+
+def solve_(__input=None):
+    """
+    :challenge: 16
+    :expect: 1100663950563322
+    """
+    words = []
+    with open(locate(__input), "r") as fp:
+        lines = read_lines(fp)
+        towels = lines[0].split(", ")
+        for word in lines[1:]:
+            words.append(word)
+
+    nfa = TowelNFA(towels)
+
+    n = 0
+    for word in words:
+        if nfa.accepts(word):
+            n += 1
+
+    return nfa.total
+
+```
+## year_2024\day_19\solve_1.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from automata.fa.nfa import NFA
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+class TowelAutomaton:
+
+    def __init__(self, towels):
+        self.towels = towels
+
+    def accepts(self, word):
+        last_states = {word}
+        while 1:
+            canonical_state = set(last_states)
+            for towel in self.towels:
+                current_state = set()
+                for state in last_states:
+                    if state == "":
+                        return True
+
+                    current_state.add(state)
+                    if state.startswith(towel):
+                        current_state.add(state[len(towel):])
+
+                last_states = current_state
+
+            if canonical_state == last_states:
+                break
+
+        return False
+
+def solve_(__input=None):
+    """
+    :challenge: 6
+    :expect: 374
+    """
+    words = []
+    with open(locate(__input), "r") as fp:
+        lines = read_lines(fp)
+        towels = lines[0].split(", ")
+        for word in lines[1:]:
+            words.append(word)
+
+    nfa = TowelAutomaton(towels)
+
+    n = 0
+    total = list()
+    for word in words:
+        if nfa.accepts(word):
+            total.append(word)
+            n += 1
+
+    return sum(1 for _ in total)
+
+```
+## year_2024\day_18\solve_2.py
+
+```py
+import heapq
+import itertools
+import operator
+import re
+import statistics
+import sys
+import traceback
+from bisect import bisect
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose, pretty
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+def get_neighbors(node, grid):
+    von_neumann = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    neighbors = []
+
+    for dy, dx in von_neumann:
+        neighbor = node[0] + dy, node[1] + dx
+
+        if -1 < neighbor[0] < grid.shape[0] and -1 < neighbor[1] < grid.shape[1]:
+            if grid[neighbor] != "#":
+                neighbors.append(neighbor)
+
+    return neighbors
+
+def dijkstra(grid, start, end, costs):
+    seen = set()
+    q = [start]
+    costs[start] = 0
+    # heapq.heapify(pq)
+    while q:
+        current = q.pop(0)
+
+        if current == end:
+            break
+
+        if current in seen:
+            continue
+
+        seen.add(current)
+
+        for n in get_neighbors(current, grid):
+            neighbor_cost = costs[n]
+            current_cost = costs[current]
+            if neighbor_cost > current_cost + 1:
+                costs[n] = current_cost + 1
+                if n in seen:
+                    seen.remove(n)
+
+            q.append(n)
+
+def run_dijkstra(coords, bytes_: int, shape, costs):
+    grid = np.full(shape, dtype=str, fill_value=".")
+    for y, x in coords[:bytes_]:
+        grid[y, x] = "#"
+
+    start = (0, 0)
+    end = (shape[0] - 1, shape[1] - 1)
+    dijkstra(grid, start, end, costs)
+
+def solve_(__input=None):
+    """
+    :challenge: 6,1
+    :expect: 26,50
+    """
+    coords = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            x, y = line.split(",")
+            coords.append((int(y), int(x)))
+
+    if "test" in  __input:
+        shape = (7, 7)
+        bytes_ = 12
+    else:
+        shape = (71, 71)
+        bytes_ = 1024
+
+    max_bytes = len(coords)
+
+    start = (0, 0)
+    end = (shape[0] - 1, shape[1] - 1)
+
+    # Classic bisect w/o built-in Python variant. Learn this through.
+    min_ = bytes_
+    max_ = max_bytes
+    while 1:
+        costs = np.full(shape, dtype=int, fill_value=sys.maxsize)
+        delta = max_ - min_
+
+        if delta < 2:
+            y, x = coords[min_]
+            return f"{x},{y}"
+
+        bisect_at = min_ + delta // 2
+        run_dijkstra(coords, bisect_at, shape, costs)
+
+        if costs[end] == sys.maxsize:
+            max_ = bisect_at
+        else:
+            min_ = bisect_at
+
+```
+## year_2024\day_18\solve_1.py
+
+```py
+import heapq
+import itertools
+import operator
+import re
+import statistics
+import sys
+import traceback
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose, pretty
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+def get_neighbors(node, grid):
+    von_neumann = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    neighbors = []
+
+    for dy, dx in von_neumann:
+        neighbor = node[0] + dy, node[1] + dx
+
+        if -1 < neighbor[0] < grid.shape[0] and -1 < neighbor[1] < grid.shape[1]:
+            if grid[neighbor] != "#":
+                neighbors.append(neighbor)
+
+    return neighbors
+
+def dijkstra(grid, start, end, costs):
+    seen = set()
+    q = [start]
+    costs[start] = 0
+    # heapq.heapify(pq)
+    while q:
+        current = q.pop(0)
+
+        if current == end:
+            break
+
+        if current in seen:
+            continue
+
+        seen.add(current)
+
+        for n in get_neighbors(current, grid):
+            neighbor_cost = costs[n]
+            current_cost = costs[current]
+            if neighbor_cost > current_cost + 1:
+                costs[n] = current_cost + 1
+                if n in seen:
+                    seen.remove(n)
+
+            q.append(n)
+            # heapq.heappush(pq, n)
+
+def solve_(__input=None):
+    """
+    :challenge: 22
+    :expect: 380
+    """
+    coords = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            x, y = line.split(",")
+            coords.append((int(y), int(x)))
+
+    if "test" in  __input:
+        shape = (7, 7)
+        bytes_ = 12
+    else:
+        shape = (71, 71)
+        bytes_ = 1024
+
+    grid = np.full(shape, dtype=str, fill_value=".")
+    costs = np.full(grid.shape, dtype=int, fill_value=sys.maxsize)
+
+    for y, x in coords[:bytes_]:
+        grid[y, x] = "#"
+
+    start = (0, 0)
+    end = (shape[0] - 1, shape[1] - 1)
+
+    dijkstra(grid, start, end, costs)
+
+    return costs[end]
+
+```
+## year_2024\day_17\solve_1.py
+
+```py
+import re
+import sys
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, ANSIColors, print2
+from year_2024.day_17.chronospatial_computer import ChronospatialComputer
+
+
+sys.setrecursionlimit(30_000)
+
+def solve_(__input=None):
+    # challenge 4,6,3,5,6,3,5,2,1,0.
+    # expect 2,1,3,0,5,2,3,7,1
+    """
+    :challenge_2: -1
+    :expect: -1
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(line)
+
+    a, b, c = [int(m) for m in re.findall(r"\d+", "".join(lines[:3]))]
+    optcodes = [int(m) for m in re.findall(r"\d+", lines[3])]
+
+    outcome = []
+    computer = ChronospatialComputer(a, b, c, optcodes, outcome.append)
+
+    while optcode := computer.next():
+        computer.set_operation(optcode[0])
+        computer.set_operand(optcode[1])
+        computer.apply()
+
+    return ",".join(str(o) for o in outcome)
+
+```
+## year_2024\day_16\solve_1.py
+
+```py
+import heapq
+import itertools
+import sys
+from enum import Enum
+from typing import List, Tuple, Generator, Self
+import numpy as np
+from aoc.helpers import locate, build_location, read_lines
+from aoc.printer import get_meta_from_fn, ANSIColors, print2
+
+
+sys.setrecursionlimit(30_000)
+
+class Heading(Enum):
+    N = 0
+    E = 1
+    S = 2
+    W = 3
+
+    def von_neumann(self) -> Tuple[int, int]:
+        match self:
+            case Heading.N: return -1, 0
+            case Heading.S: return 1, 0
+            case Heading.W: return 0, -1
+            case Heading.E: return 0, 1
+
+    def make_turns(self) -> List[Self]:
+        if self == Heading.N or self == Heading.S:
+            return [Heading.W.value, Heading.E.value]
+        return [Heading.N.value, Heading.S.value]
+
+def neighbors_and_cost_delta(heading: int, y: int, x: int, grid) -> Generator[Tuple[Heading, int, int, int], None, None]:
+    heading_explorer = Heading(heading)
+    for turned in heading_explorer.make_turns():
+        yield turned, y, x, 1000
+
+    dy, dx = heading_explorer.von_neumann() # a move
+    new_node = y + dy, x + dx
+
+    cell_value = str(grid[new_node])
+    if cell_value != "#":
+        yield heading, new_node[0], new_node[1], 1
+
+def heuristics_manhattan(a: Tuple[int, int], b: Tuple[int, int]):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def dijkstra(begin_pos: Tuple[int, int], begin_heading: Heading, end: Tuple[int, int], costs, grid):
+    """
+    Dijkstra-variant with PQ and heuristics for cut-off and priority. Not quite A* either.
+    """
+    begin = (begin_heading.value, *begin_pos)
+    pq: List[Tuple[int, int, int, int]] = [(0, *begin)]
+    costs[begin_heading.value, begin[1], begin[2]] = 0
+    seen = set()
+    while pq:
+        _, heading, y, x, = heapq.heappop(pq)
+        current = heading, y, x
+        current_cost = costs[heading, y, x]
+
+        if current in seen:
+            continue
+
+        leads = list(neighbors_and_cost_delta(heading, y, x, grid))
+        for neighbor_heading, ny, nx, delta_cost in leads:
+            previous_cost = costs[neighbor_heading, ny, nx]
+            total_cost = current_cost + delta_cost
+            neighbor = neighbor_heading, ny, nx
+            if previous_cost > total_cost:
+                costs[neighbor] = total_cost
+                if neighbor in seen:
+                    seen.remove(neighbor)
+
+            h = heuristics_manhattan((ny, nx), end)
+            heapq.heappush(pq, (h, neighbor_heading, ny, nx))
+
+        seen.add(current)
+
+def solve_(__input=None):
+    """
+    :challenge: 7036
+    :challenge_2: 11048
+    :expect: 73432
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(list(line))
+
+    grid = np.matrix(lines, dtype=str)
+    cost_shape = (4, *grid.shape)
+    costs = np.full(cost_shape, dtype=np.int64, fill_value=sys.maxsize)
+    begin, = [(int(y), int(x)) for y, x in np.argwhere(grid == 'S')]
+    end, = [(int(y), int(x)) for y, x in np.argwhere(grid == 'E')]
+    begin_heading = Heading.E
+
+    dijkstra(begin, begin_heading, end, costs, grid)
+
+    # For troubleshooting
+    cost_summary = np.zeros(grid.shape)
+
+    for z, y, x in itertools.product(range(cost_shape[0]), range(cost_shape[1]), range(cost_shape[2])):
+        if (cost_summary[y, x] == 0 or costs[z, y, x] < cost_summary[y, x]) and costs[z, y, x] != sys.maxsize:
+            cost_summary[y, x] = costs[z, y, x]
+
+    return costs[:,end[0],end[1]].min()
+
+```
 ## year_2024\day_15\solve_2.py
 
 ```py
